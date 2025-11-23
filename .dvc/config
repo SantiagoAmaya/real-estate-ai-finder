@@ -1,4 +1,7 @@
 [core]
     remote = storage
+[cache]
+    type = symlink
 ['remote "storage"']
     url = s3://mlops-real-estate-santi/dvc-storage
+    jobs = 4

@@ -128,6 +128,23 @@ This is a learning project. The main workflow is:
 5. Commit (pre-commit hooks will run)
 6. Push and open PR
 
+## Data Management
+
+This project uses DVC (Data Version Control) for data versioning with AWS S3 storage.
+
+### Quick Start
+```bash
+# Clone repository
+git clone <repo-url>
+cd real-estate-ai-finder
+
+# Pull data from S3
+dvc pull
+
+# Data is now in data/raw/
+```
+
+See [data/README.md](data/README.md) for detailed data documentation.
 ## 📝 License
 
 MIT
