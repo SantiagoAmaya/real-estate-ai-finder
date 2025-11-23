@@ -1,0 +1,24 @@
+# Main configuration file
+project:
+  name: "real-estate-ai-finder"
+  version: "0.1.0"
+
+data:
+  raw_dir: "data/raw"
+  processed_dir: "data/processed"
+  cache_dir: "data/cache"
+
+scraping:
+  base_url: "https://www.idealista.com"
+  location: "barcelona"
+  property_type: "local"
+  max_pages: 5
+  delay_seconds: 2
+
+mlflow:
+  tracking_uri: "http://localhost:5000"
+  experiment_name: "real-estate-finder"
+
+logging:
+  level: "INFO"
+  format: "{time} | {level} | {message}"

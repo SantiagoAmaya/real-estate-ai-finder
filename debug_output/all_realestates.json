@@ -1,0 +1,1700 @@
+[
+  {
+    "accuracy": false,
+    "address": {
+      "country": "España",
+      "district": "Carabanchel",
+      "neighborhood": "Abrantes",
+      "zipCode": "28025",
+      "municipality": " Madrid Capital",
+      "province": "Madrid",
+      "city": " Madrid Capital",
+      "cityZone": null,
+      "county": "Madrid, Zona de",
+      "regionLevel1": "Madrid",
+      "regionLevel2": "Madrid",
+      "upperLevel": "Abrantes"
+    },
+    "brandInfo": {
+      "barColor": "#F1F1F1",
+      "logo": null,
+      "textColor": "#1D1D1D"
+    },
+    "buildingSubtype": "Flat",
+    "buildingType": "Flat",
+    "clientAlias": "HM INMOBILIARIA",
+    "clientId": 9202750735146,
+    "clientType": "professional",
+    "clientTypeId": 3,
+    "clientUrl": "/es/inmobiliaria-hm-inmobiliaria/comprar/inmuebles/espana/todas-las-zonas/l?clientId=9202750735146",
+    "coordinates": {
+      "latitude": 40.37595517973565,
+      "longitude": -3.7338581984095516,
+      "accuracy": 0
+    },
+    "date": {
+      "diff": 0,
+      "unit": "NOW"
+    },
+    "dateOriginal": {
+      "diff": 1,
+      "unit": "DAYS",
+      "timestamp": 1763410764543
+    },
+    "description": "Hminmobiliaria tiene Tú PISO, en AVD. ABRANTES, a 1 min de la Estación de Metro, \"PAN BENDITO\" 100% FINANCIACIÓN! SIN ENTRADA! SIN COMISIONES! SIN AVALES!\n\n¡TÚ PROPIEDAD por MENOS de un ALQUILER! COMPRA tú PISO y OLVÍDATE del ALQUILER!\nVER VIDEO!\n\nBuena opción como PRIMERA VIVIENDA o como INVERSIÓN!\n\nSolo con tus INGRESOS y los gastos de escrituras! NADA más!\n\n 8372 - 3 dormitorios, salón-comedor con salida a la terraza, cocina \n\nLa ubicación es magnífica con todos los servicios de comercios, colegios, institutos, farmacia, a muy poca distancia \n\nMuy bien comunicado con transporte público en la misma puerta el METRO y varias lineas de autobuses. \n\nSi te gusta el DEPORTE estás de ENHORABUENA, con varios parques Emperatriz Maria de Austria, Pan Bendito, Pza de loa Hilanderas,.. .\n\n¡ NO te COBRAMOS COMISIÓN, NI por la VENTA de la VIVIENDA NI por la TRAMITACIÓN del PRÉSTAMO!\n\nSolo tienes que disponer de los gastos de escritura y el resto te lo financia el banco hasta el 100% del valor de la compra.\n\nCada cliente es ÚNICO, cada Compra es ÚNICA, cada Vivienda es ÚNICA.\n\n100%! FINANCIACIóN!\n\nSIN ENTRADA!\n\nSin COMISIONES, NI por la VENTA, NI por la TRAMITACION de la venta NI del préstamo!\n\nSolo con TUS INGRESOS y los gastos de escrituras! NADA mas!\n\nHMInmobiliaria convirtiendo desde 1.989 los SueÑoS en HoGaReS!",
+    "detail": {
+      "es-ES": "/es/comprar/vivienda/madrid-capital/aire-acondicionado-calefaccion-terraza-ascensor-no-amueblado/188144702/d"
+    },
+    "externalContactUrl": null,
+    "features": [
+      {
+        "key": "air_conditioner",
+        "value": 1,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "cabinets",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "heating",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "ceramic_stoneware",
+        "value": 6,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "parquet",
+        "value": 9,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "terrace",
+        "value": 10,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "elevator",
+        "value": 13,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "kitchen_office",
+        "value": 15,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "balcony",
+        "value": 32,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "alarm",
+        "value": 77,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "armored_door",
+        "value": 84,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "not_furnished",
+        "value": 130,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "equiped_kitchen",
+        "value": 131,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "antiquity",
+        "value": 6,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "bathrooms",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "conservationStatus",
+        "value": 4,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "floor",
+        "value": 8,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "hotWater",
+        "value": 1,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "orientation",
+        "value": 4,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "rooms",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "surface",
+        "value": 110,
+        "maxValue": 0,
+        "minValue": 0
+      }
+    ],
+    "hasListLogo": true,
+    "hasSubsidies": true,
+    "hasVideo": 1,
+    "hasStamp": true,
+    "hasVgo": false,
+    "hasFloorPlans": false,
+    "id": 188144702,
+    "isBareOwnership": false,
+    "isCompleted": null,
+    "isDiscarded": false,
+    "isExternalContact": false,
+    "isFaved": false,
+    "isHighlighted": false,
+    "isMainTypology": false,
+    "isNew": false,
+    "isNewConstruction": false,
+    "isOccupied": false,
+    "isOpportunity": false,
+    "isPackAdvancePriority": false,
+    "isPackBasicPriority": false,
+    "isPackMinimalPriority": false,
+    "isPackPremiumPriority": true,
+    "isPremium": false,
+    "isPromotion": false,
+    "isTemporaryRental": false,
+    "isTop": true,
+    "isTopPlus": true,
+    "isTrackedPhone": true,
+    "isVirtualTour": false,
+    "isVisited": false,
+    "hasOpenHouse": false,
+    "location": "Avenida de Abrantes, Abrantes",
+    "minPrice": 0,
+    "multimedia": [
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9ed6569a-e62f-46a7-a39c-32b051dbf0ae?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/50d4795f-a98c-4efa-9275-a4c5b43ee6cb?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/77374d4e-390f-4a33-af1f-c2731f1816bb?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/7b1c451f-fc4b-4dde-8bc6-b9c5a298dd50?rule=original",
+        "roomType": "balcony"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/7f6f0f89-4d31-4a70-9c41-ee2eb6910411?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/db690899-8215-479b-804e-3efcf8b7bfce?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/31f95525-c839-4580-a6b6-f12d2c8f4e0e?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c29a31b5-e1dd-4f6f-9b64-da727562c363?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/fedf09c9-3f32-4c89-b2d6-d690515f2ab0?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/8ccfe78a-93e1-45b5-af85-4b3983b73b36?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/f0dd0b31-d939-4776-9489-5f84e80dbd44?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/eab253f9-d905-4be4-9788-0a49448631a6?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/90acf6cc-0024-41bb-b1e6-ae9ebb34bdaf?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/d597812b-e4ff-4515-a5b4-c52d1403c176?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/75d30a73-63a2-45f4-b503-cf2cd9f17709?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/d59c8bc4-44d9-4976-a330-9e2db9c6a2bc?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b09a00a7-251c-46f3-b132-524d86f8334e?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/80bc678b-5391-4cc8-9fc2-7090bf3f68f6?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/31954bc7-d9a7-4435-bdc8-69bc4510bae2?rule=original",
+        "roomType": "balcony"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/afea02af-4b23-4e78-a640-6227da549d7e?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/eb420ba8-db00-414c-a188-cbf9f2e72324?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/183f463a-3ce9-4e4f-bf85-6ee07008f152?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/77ea3557-2ab5-43b1-be4e-ae090cf30264?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/6a0f7759-8d7e-4a8c-8e47-dcb508aabf47?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c5d25113-4628-4c15-8c00-319c89c102cf?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b945ab55-6b0b-46ad-8575-0ec0e935dce2?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/ca7cd047-716f-4056-ab69-2f01196198b3?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/a8435fe3-9425-4b4f-862e-3907b4ff269d?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c5050c0f-4f93-4e35-8d6c-2b96d87cb284?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/43306dd4-93dc-440f-bf67-b04e01e90d12?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/689b8952-965c-4d09-a2fe-d1a7ad01f0b1?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/3dc4b503-4c01-46aa-a16c-5d3747dc94a2?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/bdb74d6b-a64f-42b4-933f-685dfd3afe7a?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/bbaaaf09-eb62-41b0-bd0e-a22b1cef7f7e?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/e49f5e4e-b1bd-4367-9bda-4b869cde9ce0?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/09addf32-3395-4ed3-b73e-60ea9bff7288?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/be09f31c-1649-4003-8dac-ffb34115afa1?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/ee8e200b-7d3d-4b4c-848d-3d351f493d0f?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/3b3cd16e-f153-4568-9d20-f33e921161f8?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/34e68b17-ecec-4f83-8ca0-d421219c39f2?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/bfee4564-83fa-4ce7-8607-9070b61dfc12?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/31e7afa3-283d-4f9d-b031-c5676aa0fd82?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/079948d8-287a-496f-85df-7f13bc32cd35?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/d4fee8cb-c57f-473b-8ec2-0d90e58c28fe?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "youtube",
+        "src": "https://youtu.be/MIcE1waF_w8",
+        "roomType": null
+      }
+    ],
+    "otherFeaturesCount": 0,
+    "periodicityId": 0,
+    "phone": "918007061",
+    "price": "248.000 €",
+    "promotionId": 0,
+    "promotionLogo": "https://static.fotocasa.es/images/client/b28a6a0f-8ff6-46d8-8245-4d2fec0f62c5/20240130125329?rule=original",
+    "promotionUrl": null,
+    "promotionTitle": null,
+    "promotionTypologiesCounter": null,
+    "promotionTypologies": [],
+    "publisherId": "b28a6a0f-8ff6-46d8-8245-4d2fec0f62c5",
+    "rawPrice": 248000,
+    "realEstateAdId": "b3961d3f-86c7-4fd5-9f94-013eba7c4fb3",
+    "reducedPrice": null,
+    "subtypeId": 1,
+    "transactionTypeId": 1,
+    "typeId": 2,
+    "userId": null
+  },
+  {
+    "accuracy": false,
+    "address": {
+      "country": "España",
+      "district": "Barrio de Salamanca",
+      "neighborhood": "Goya",
+      "zipCode": "28006",
+      "municipality": " Madrid Capital",
+      "province": "Madrid",
+      "city": " Madrid Capital",
+      "cityZone": null,
+      "county": "Madrid, Zona de",
+      "regionLevel1": "Madrid",
+      "regionLevel2": "Madrid",
+      "upperLevel": "Goya"
+    },
+    "brandInfo": {
+      "barColor": "#020202",
+      "logo": null,
+      "textColor": "#FFFFFF"
+    },
+    "buildingSubtype": "Flat",
+    "buildingType": "Flat",
+    "clientAlias": "Huspy",
+    "clientId": 9202772012624,
+    "clientType": "professional",
+    "clientTypeId": 3,
+    "clientUrl": "/es/inmobiliaria-huspy/comprar/inmuebles/espana/todas-las-zonas/l?clientId=9202772012624",
+    "coordinates": {
+      "latitude": 40.42762472669295,
+      "longitude": -3.6757354638598523,
+      "accuracy": 0
+    },
+    "date": {
+      "diff": 0,
+      "unit": "NOW"
+    },
+    "dateOriginal": {
+      "diff": 43,
+      "unit": "DAYS",
+      "timestamp": 1759774085300
+    },
+    "description": "Exclusiva vivienda reformada a estrenar en Calle Don Ramón de la Cruz – Distrito de Salamanca\r\n\r\nPresentamos esta espectacular vivienda totalmente reformada y amueblada a estrenar, ubicada en una de las zonas más cotizadas de Madrid: la prestigiosa Calle Don Ramón de la Cruz, en pleno corazón del distrito de Salamanca.\r\n\r\nCon 94 m² construidos, esta propiedad se sitúa en la segunda planta exterior de un edificio señorial y exclusivamente residencial con seis alturas y tan solo cuatro vecinos por planta, lo que garantiza tranquilidad e intimidad. El edificio cuenta con ascensor, portero físico, y acceso adaptado para personas con movilidad reducida.\r\n\r\nLa vivienda destaca por su cuidada reforma integral con materiales y acabados de alta calidad. Dispone de tres dormitorios, todos con armarios empotrados de gran capacidad, y dos baños completos revestidos en mosaico cerámico de diseño.\r\n\r\nEl salón-comedor y las habitaciones cuentan con suelo de madera natural, mientras que la carpintería interior está compuesta por puertas de madera maciza. La propiedad se entrega completamente amueblada con mobiliario de diseño contemporáneo y equipada con electrodomésticos de primeras marcas.\r\n\r\nTodas las ventanas son oscilobatientes, con aislamiento térmico y acústico de alta eficiencia, garantizando confort y silencio en el interior. Además, dispone de sistema de climatización por conductos con bomba de frío/calor, ideal para todas las estaciones del año.\r\n\r\nUno de sus grandes atractivos es el balcón exterior a la calle, que proporciona luminosidad y vistas despejadas a una zona con abundante arbolado y espacios verdes.\r\n\r\nEn cuanto a la ubicación, se encuentra excelentemente comunicada mediante transporte público, a pocos minutos a pie de tres estaciones de metro y diversas líneas de autobuses. Además, en las inmediaciones se puede disfrutar de una amplia oferta de comercios, restaurantes, colegios, bancos, zonas de ocio y parques, así como de grandes superficies como El Corte Inglés.\r\n\r\nUna oportunidad única para vivir o invertir en una de las zonas más exclusivas de Madrid, en una vivienda que combina elegancia, confort y ubicación inmejorable. Contacta con Huspy para más información. [IW]",
+    "detail": {
+      "es-ES": "/es/comprar/vivienda/madrid-capital/aire-acondicionado-terraza-ascensor/187776832/d"
+    },
+    "externalContactUrl": null,
+    "features": [
+      {
+        "key": "air_conditioner",
+        "value": 1,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "cabinets",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "terrace",
+        "value": 10,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "elevator",
+        "value": 13,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "equiped_kitchen",
+        "value": 131,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "antiquity",
+        "value": 9,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "bathrooms",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "conservationStatus",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "floor",
+        "value": 7,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "orientation",
+        "value": 1,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "rooms",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "surface",
+        "value": 94,
+        "maxValue": 0,
+        "minValue": 0
+      }
+    ],
+    "hasListLogo": true,
+    "hasSubsidies": false,
+    "hasVideo": 0,
+    "hasStamp": false,
+    "hasVgo": false,
+    "hasFloorPlans": false,
+    "id": 187776832,
+    "isBareOwnership": false,
+    "isCompleted": null,
+    "isDiscarded": false,
+    "isExternalContact": false,
+    "isFaved": false,
+    "isHighlighted": false,
+    "isMainTypology": false,
+    "isNew": false,
+    "isNewConstruction": false,
+    "isOccupied": false,
+    "isOpportunity": false,
+    "isPackAdvancePriority": false,
+    "isPackBasicPriority": false,
+    "isPackMinimalPriority": false,
+    "isPackPremiumPriority": true,
+    "isPremium": false,
+    "isPromotion": false,
+    "isTemporaryRental": false,
+    "isTop": true,
+    "isTopPlus": true,
+    "isTrackedPhone": true,
+    "isVirtualTour": false,
+    "isVisited": false,
+    "hasOpenHouse": false,
+    "location": "Goya",
+    "minPrice": 0,
+    "multimedia": [
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/cbfc4b74-85d0-4c47-acb3-afcf47123acc?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/1d9c7052-4023-4035-96c2-d09ce104355e?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/774c5a83-a08c-4689-ad77-e5e9ce7f3b1b?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9dfa7066-5c65-43bf-ad1c-b39dad9e35f2?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/bdf7a59c-8269-4db8-a952-4f28efc15765?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/d856f7e9-5e5c-4b95-a990-93119c637c95?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c08a5719-cf83-4c8e-aac1-7e0120227820?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/719c8183-abd8-4b63-82dc-a9c270cb4238?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4243ec17-2bd6-40ea-8983-cbfb1db08ae9?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9672a3e0-2ad1-458d-8cb1-ecfd31c84fa2?rule=original",
+        "roomType": "bathroom"
+      }
+    ],
+    "otherFeaturesCount": 0,
+    "periodicityId": 0,
+    "phone": "919453248",
+    "price": "1.195.000 €",
+    "promotionId": 0,
+    "promotionLogo": "https://static.fotocasa.es/images/client/9202772012624/720506-20240207140853.jpg?rule=original",
+    "promotionUrl": null,
+    "promotionTitle": null,
+    "promotionTypologiesCounter": null,
+    "promotionTypologies": [],
+    "publisherId": "8aea3f8e-686c-432f-8ff1-8554ffaea498",
+    "rawPrice": 1195000,
+    "realEstateAdId": "98c1ed2c-0b6a-4b37-82b6-e188574804bd",
+    "reducedPrice": null,
+    "subtypeId": 1,
+    "transactionTypeId": 1,
+    "typeId": 2,
+    "userId": null
+  },
+  {
+    "accuracy": false,
+    "address": {
+      "country": "España",
+      "district": "San Blas",
+      "neighborhood": "Simancas",
+      "zipCode": "28037",
+      "municipality": " Madrid Capital",
+      "province": "Madrid",
+      "city": " Madrid Capital",
+      "cityZone": null,
+      "county": "Madrid, Zona de",
+      "regionLevel1": "Madrid",
+      "regionLevel2": "Madrid",
+      "upperLevel": "Simancas"
+    },
+    "brandInfo": {
+      "barColor": "#F1F1F1",
+      "logo": null,
+      "textColor": "#1D1D1D"
+    },
+    "buildingSubtype": "Flat",
+    "buildingType": "Flat",
+    "clientAlias": "Alquiler Seguro",
+    "clientId": 9202750898737,
+    "clientType": "professional",
+    "clientTypeId": 3,
+    "clientUrl": "/es/inmobiliaria-alquiler-seguro/comprar/inmuebles/espana/todas-las-zonas/l?clientId=9202750898737",
+    "coordinates": {
+      "latitude": 40.437809475423585,
+      "longitude": -3.6348931824222905,
+      "accuracy": 0
+    },
+    "date": {
+      "diff": 0,
+      "unit": "NOW"
+    },
+    "dateOriginal": {
+      "diff": 121,
+      "unit": "DAYS",
+      "timestamp": 1753103942487
+    },
+    "description": "As Real Estate, departamento de venta del Grupo Alquiler Seguro, te ofrece en exclusiva esta fantástica vivienda lista para entrar a vivir, ubicada en el consolidado barrio de Pueblo Nuevo.\n\nLa ubicación es inmejorable: en una zona tranquila y residencial, pero con todos los servicios al alcance. A escasos minutos encontrarás colegios de distintas etapas educativas, supermercados, comercios de proximidad, centros de salud y todo lo necesario para facilitar tu día a día.\n\nAdemás, la comunicación con el resto de la ciudad es excelente. A solo 5 minutos caminando se encuentra la estación de metro Ciudad Lineal (Línea 5), junto a varias líneas de autobuses urbanos (4, 38, 48, 70, 77, 104 y 105). También dispone de acceso rápido a las vías principales A-2 y M-30.\n\nLa vivienda está situada en la tercera planta de un edificio de cuatro alturas sin ascensor\n\nCuenta con 78 m² construidos distribuidos de forma muy funcional. Dispone de amplio salón de paso, con buena entrada de luz natural. 2 dormitorios con armarios empotrados, el principal con baño en suite y otro baño.\n\nCalefacción central y suelos de tarima, que aportan calidez y confort.\n\nNo pierdas la oportunidad de conocer tu nueva casa. Llámanos y agenda tu visita cuanto antes.",
+    "detail": {
+      "es-ES": "/es/comprar/vivienda/madrid-capital/aire-acondicionado-no-amueblado/187119097/d"
+    },
+    "externalContactUrl": null,
+    "features": [
+      {
+        "key": "air_conditioner",
+        "value": 1,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "not_furnished",
+        "value": 130,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "equiped_kitchen",
+        "value": 131,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "bathrooms",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "rooms",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "surface",
+        "value": 78,
+        "maxValue": 0,
+        "minValue": 0
+      }
+    ],
+    "hasListLogo": true,
+    "hasSubsidies": true,
+    "hasVideo": 0,
+    "hasStamp": false,
+    "hasVgo": false,
+    "hasFloorPlans": false,
+    "id": 187119097,
+    "isBareOwnership": false,
+    "isCompleted": null,
+    "isDiscarded": false,
+    "isExternalContact": false,
+    "isFaved": false,
+    "isHighlighted": false,
+    "isMainTypology": false,
+    "isNew": false,
+    "isNewConstruction": false,
+    "isOccupied": false,
+    "isOpportunity": false,
+    "isPackAdvancePriority": false,
+    "isPackBasicPriority": false,
+    "isPackMinimalPriority": false,
+    "isPackPremiumPriority": true,
+    "isPremium": false,
+    "isPromotion": false,
+    "isTemporaryRental": false,
+    "isTop": true,
+    "isTopPlus": true,
+    "isTrackedPhone": true,
+    "isVirtualTour": true,
+    "isVisited": false,
+    "hasOpenHouse": false,
+    "location": "Calle De Albarracín, Simancas",
+    "minPrice": 0,
+    "multimedia": [
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/8857d043-a545-4ae8-9509-f875b8e6db6a?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/2f664619-9601-4d7e-8b15-9e4e82300555?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/ee7a7bd2-b75d-4e24-a6e0-b1c495828978?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b09801af-efef-41d0-a59a-c6273b8653d2?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/01ed369c-4361-4bfe-989f-342bfffe5141?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/2a541acd-6a82-43e1-9cee-4d0c70242852?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/0a72d15d-03fe-453b-ac10-a7426e1d3b1f?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4f852281-114f-4e8d-a551-c4991720980e?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/266bfd43-dfd2-4aeb-b676-7f684f3077d0?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/a3486bb7-9922-4a48-94a4-17a3cafd17f1?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/94661769-6303-43d9-a838-156245529fdb?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/a2c66d28-ac54-47a9-86d3-48f4843e8d36?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c061403d-1687-4c15-8ba1-0142f0a4e2e0?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/5393f2c9-4fb5-4c73-8620-871e1a2f6b34?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/87f0dce0-e626-4631-9d46-0779aab1e4e2?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/1ecaadf9-666a-4c4b-89ca-547301c8917d?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/20d311fb-e07f-49bc-9392-21ac12d6a1de?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/72229083-7495-44b9-bdbc-3cc9613ce226?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/a1fd6b70-4453-40c6-bdc3-0f53e06fc1a2?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/45cc7c97-ac1e-4e9c-b19a-7eb986b67524?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/8c39d5f2-2878-43a4-a175-9e56c5a31cf9?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/57ea4c01-4bc2-425f-bdce-498838632818?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/70a0e5c8-35e5-4dce-ab26-710b25a29b72?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/ce9a3be7-d1d6-4a42-8753-ee4acbc2905a?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/ce06e50e-8bc3-4931-9762-aa2ef79d7bda?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4bc3f040-2ea8-4db0-a92f-5783d39f6a7d?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/f9affc17-bea0-40ba-9775-60cfb505d0ad?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/0bc57f72-d01c-4a1c-8e41-43b9bebb817e?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/301fed7c-92a2-46f3-9ad1-8bf6c771f344?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "tour-virtual",
+        "src": "https://floorfy.com/es/tour/2417563?play=no",
+        "roomType": null
+      }
+    ],
+    "otherFeaturesCount": 0,
+    "periodicityId": 0,
+    "phone": "919453756",
+    "price": "377.000 €",
+    "promotionId": 0,
+    "promotionLogo": "https://static.fotocasa.es/images/client/96f00506-5d56-4523-bf74-822a3582e8e4/20220704112916.jpeg?rule=original",
+    "promotionUrl": null,
+    "promotionTitle": null,
+    "promotionTypologiesCounter": null,
+    "promotionTypologies": [],
+    "publisherId": "96f00506-5d56-4523-bf74-822a3582e8e4",
+    "rawPrice": 377000,
+    "realEstateAdId": "2fa17cc4-9fd2-438d-b41d-2747e5c34311",
+    "reducedPrice": "13.000 €",
+    "subtypeId": 1,
+    "transactionTypeId": 1,
+    "typeId": 2,
+    "userId": null
+  },
+  {
+    "accuracy": false,
+    "address": {
+      "country": "España",
+      "district": "Barrio de Salamanca",
+      "neighborhood": "Fuente del Berro",
+      "zipCode": "28028",
+      "municipality": " Madrid Capital",
+      "province": "Madrid",
+      "city": " Madrid Capital",
+      "cityZone": null,
+      "county": "Madrid, Zona de",
+      "regionLevel1": "Madrid",
+      "regionLevel2": "Madrid",
+      "upperLevel": "Fuente del Berro"
+    },
+    "brandInfo": {
+      "barColor": "#8CB2E1",
+      "logo": null,
+      "textColor": "#1D1D1D"
+    },
+    "buildingSubtype": "Attic",
+    "buildingType": "Flat",
+    "clientAlias": "Althena",
+    "clientId": 9202775742854,
+    "clientType": "professional",
+    "clientTypeId": 3,
+    "clientUrl": "/es/inmobiliaria-althena/comprar/inmuebles/espana/todas-las-zonas/l?clientId=9202775742854",
+    "coordinates": {
+      "latitude": 40.429721349421534,
+      "longitude": -3.6630956311219243,
+      "accuracy": 0
+    },
+    "date": {
+      "diff": 0,
+      "unit": "NOW"
+    },
+    "dateOriginal": {
+      "diff": 22,
+      "unit": "DAYS",
+      "timestamp": 1761600285910
+    },
+    "description": " \nBARRIO SALAMANCA / FUENTE DEL BERRO\nEspectacular ático, que ofrece 112 m².\nLa propiedad cuenta con tres habitaciones, ideales para adaptarse a tus necesidades, ya sea como dormitorios, oficina o espacios de estudio. \nNo solo se trata del interior; este ático es un verdadero oasis al aire libre con dos terrazas que suman un total de 50 m². La primera tiene 20 m² y la segunda 30 m², perfectas para disfrutar de momentos al aire libre.\nAdemás, el ático está equipado con 3 baños.\n La calefacción de gas natural asegura que estés siempre cómodo y cálido en los meses más fríos.\nPrácticamente piensas en los detalles de confort. Este rincón de tranquilidad en una de las zonas más demandadas de la capital, ofrece armarios empotrados que aprovechando al máximo el espacio, manteniendo tu nuevo hogar ordenado y estilizado. También disfrutarás de la comodidad de un ascensor que te llevará directamente a la puerta de tu nuevo hogar.\nLos alrededores no se quedan atrás. El Barrio de Salamanca es conocido por sus boutiques de lujo, parques y una oferta gastronómica sin igual. Tendrás acceso a todo lo que necesitas, desde supermercados hasta cafés y restaurantes de renombre, lo que te permitirá disfrutar de la vida urbana al máximo.\nLas primeras fotos son render\nEn el precio están excluidos el impuesto sobre transmisiones patrimoniales y los gastos sobre notaria y registro de la propiedad.\n",
+    "detail": {
+      "es-ES": "/es/comprar/vivienda/madrid-capital/calefaccion-terraza-ascensor-no-amueblado/187967285/d"
+    },
+    "externalContactUrl": null,
+    "features": [
+      {
+        "key": "cabinets",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "heating",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "terrace",
+        "value": 10,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "elevator",
+        "value": 13,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "not_furnished",
+        "value": 130,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "antiquity",
+        "value": 8,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "bathrooms",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "conservationStatus",
+        "value": 4,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "floor",
+        "value": 11,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "orientation",
+        "value": 8,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "rooms",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "surface",
+        "value": 124,
+        "maxValue": 0,
+        "minValue": 0
+      }
+    ],
+    "hasListLogo": true,
+    "hasSubsidies": false,
+    "hasVideo": 0,
+    "hasStamp": false,
+    "hasVgo": false,
+    "hasFloorPlans": false,
+    "id": 187967285,
+    "isBareOwnership": false,
+    "isCompleted": null,
+    "isDiscarded": false,
+    "isExternalContact": false,
+    "isFaved": false,
+    "isHighlighted": false,
+    "isMainTypology": false,
+    "isNew": false,
+    "isNewConstruction": false,
+    "isOccupied": false,
+    "isOpportunity": false,
+    "isPackAdvancePriority": false,
+    "isPackBasicPriority": false,
+    "isPackMinimalPriority": false,
+    "isPackPremiumPriority": true,
+    "isPremium": false,
+    "isPromotion": false,
+    "isTemporaryRental": false,
+    "isTop": true,
+    "isTopPlus": true,
+    "isTrackedPhone": true,
+    "isVirtualTour": false,
+    "isVisited": false,
+    "hasOpenHouse": false,
+    "location": "Alejandro Gonzalez, Fuente del Berro",
+    "minPrice": 0,
+    "multimedia": [
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b40511d4-b14c-45f2-b67f-8385fb31e094?rule=original",
+        "roomType": "terrace"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/47b9d95c-aaa0-48c4-b076-3641327fd629?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/febf7815-812d-4b2b-be2c-de2bf66dc886?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9c3107ba-ee39-445d-bd81-6571851790d5?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/299676a7-7408-4ca0-aff9-05b1b79091fa?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c860756e-640c-4790-a2f5-87df9555776f?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/effcc40d-e6c2-444d-82e3-d266c22eec92?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4478e87f-de77-4b94-b25b-3e173ecf2f27?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4453bff3-564b-43af-bef6-7a655a380f8b?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c7c52449-e1e7-4f55-90ec-280bb6d4803e?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/e6ada1a3-65b3-486f-91d0-833e10a1c894?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/e74e7d9c-d432-4f39-aa79-e1ddbaac743c?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/21751be3-88f2-4cf7-95ae-dd40cb826b3c?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/0f2f3cd0-5795-45bf-a0bb-04cdb053cb03?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/a57479ec-90bd-4f52-9cf9-e0713943852a?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/648cd056-e97b-4d91-8196-9d2ea9717bb5?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/d2088fe2-288d-4934-a174-2f6502232dec?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/20d7b4ef-5086-40af-89a3-ea31154f8c67?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/58d8ed14-8d2b-4fe1-b3d9-9cb0a1dedd67?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/80064e6b-7c1f-443c-99f9-3c3e9a907a5c?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4327bda1-c898-48d4-8864-01b3db7a4506?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/a0681195-440e-4371-87c2-cbc67e432a1d?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9a230fe1-e526-4c41-a832-cdf26deecc8e?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4a28a11d-a931-4bed-b387-a3ec3df1101e?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b28f520c-1eae-40ab-a4d2-018c27e39973?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/f15bc2ca-9d95-4224-bcde-6114eaa4bec4?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/e3e1caae-5f79-4fe6-a2a3-1fbd58b7244e?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/32b68e13-bfd2-40f5-9465-bfa33bd7fdbb?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9345e737-9e14-49af-bb03-983c7897b5b5?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/6ebf8a57-2f2c-4dd4-8697-fc593d580a72?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/be0e7476-f9d9-4866-9dca-53543cb6bfba?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/ccd11ee0-5657-4d90-a104-5042b0a8105e?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b1727217-2930-47d1-a745-9dd0d68b9f67?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9506d47f-7fdb-480d-8ddb-ba3d659eb056?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/89fa76bc-2fec-420b-9ea0-e8cd1960a407?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/07a2a3ae-471c-4b0e-9c97-f9789d010e67?rule=original",
+        "roomType": "terrace"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/2554dd97-c1ee-46af-bb1c-17cd470760e1?rule=original",
+        "roomType": "terrace"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b937b696-d44d-4eec-b6b1-52922f7ef5e9?rule=original",
+        "roomType": "terrace"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/3774b573-e67e-4351-b2c3-899e27a839bf?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/70beb7cd-e40a-4c20-b05a-ce40f1bee4d1?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/f333f15e-1cbe-4318-9b0c-352f98e0d6bc?rule=original",
+        "roomType": "terrace"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/6c9f38e6-52d9-4fdb-ba25-738f273ac522?rule=original",
+        "roomType": "terrace"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/cb2ee093-4adf-44e0-bbf5-57fabe464421?rule=original",
+        "roomType": "terrace"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c9376d68-538c-425f-9eec-f726f72a327d?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/7ec1ff70-e576-43c7-be51-70ca7018dc33?rule=original",
+        "roomType": "exterior"
+      }
+    ],
+    "otherFeaturesCount": 0,
+    "periodicityId": 0,
+    "phone": "910753952",
+    "price": "1.090.000 €",
+    "promotionId": 0,
+    "promotionLogo": "https://static.fotocasa.es/images/client/6972f98b-3c9f-4dd8-b689-4ed216f2c6d6/20251027171346?rule=original",
+    "promotionUrl": null,
+    "promotionTitle": null,
+    "promotionTypologiesCounter": null,
+    "promotionTypologies": [],
+    "publisherId": "6972f98b-3c9f-4dd8-b689-4ed216f2c6d6",
+    "rawPrice": 1090000,
+    "realEstateAdId": "57e1a4a6-ced9-4aaa-baba-fbf563aa1faa",
+    "reducedPrice": "60.000 €",
+    "subtypeId": 6,
+    "transactionTypeId": 1,
+    "typeId": 2,
+    "userId": null
+  },
+  {
+    "accuracy": false,
+    "address": {
+      "country": "España",
+      "district": "Barrio de Salamanca",
+      "neighborhood": "Lista",
+      "zipCode": "28006",
+      "municipality": " Madrid Capital",
+      "province": "Madrid",
+      "city": " Madrid Capital",
+      "cityZone": null,
+      "county": "Madrid, Zona de",
+      "regionLevel1": "Madrid",
+      "regionLevel2": "Madrid",
+      "upperLevel": "Lista"
+    },
+    "brandInfo": {
+      "barColor": "#8CB2E1",
+      "logo": null,
+      "textColor": "#1D1D1D"
+    },
+    "buildingSubtype": "Flat",
+    "buildingType": "Flat",
+    "clientAlias": "Aproperties Real Estate Madrid",
+    "clientId": 9202756368671,
+    "clientType": "professional",
+    "clientTypeId": 3,
+    "clientUrl": "/es/inmobiliaria-aproperties-real-estate-madrid/comprar/inmuebles/espana/todas-las-zonas/l?clientId=9202756368671",
+    "coordinates": {
+      "latitude": 40.42978582066658,
+      "longitude": -3.6752274078654543,
+      "accuracy": 0
+    },
+    "date": {
+      "diff": 0,
+      "unit": "NOW"
+    },
+    "dateOriginal": {
+      "diff": 182,
+      "unit": "DAYS",
+      "timestamp": 1747823122590
+    },
+    "description": "PISO LUMINOSO, REFORMADO A ESTRENAR Y AMUEBLADO EN LISTA\n\nEn el barrio de Lista, en la elegante calle del Conde de Peñalver, a su altura con Juan Bravo, podemos estrenar una vivienda en una finca moderna con portero y servicios comunes. Una tercera planta distribuida en salón, comedor y cocina integrada, más un baño completo que hace las veces de aseo de cortesía. Y tres dormitorios dobles con amplios armarios, dos de ellos con baño en suite. Una ubicación fantástica con todo lo necesario para el día a día y a escasos metros de la zona más comercial de la capital.\n\n¿Te imaginas vivir aquí?  \n Ref. VM2505007 ",
+    "detail": {
+      "es-ES": "/es/comprar/vivienda/madrid-capital/aire-acondicionado-calefaccion-trastero-ascensor-amueblado/186549303/d"
+    },
+    "externalContactUrl": null,
+    "features": [
+      {
+        "key": "air_conditioner",
+        "value": 1,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "cabinets",
+        "value": 2,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "heating",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "storage_room",
+        "value": 11,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "elevator",
+        "value": 13,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "ensuite_bathroom",
+        "value": 18,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "furnished",
+        "value": 19,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "household_appliances",
+        "value": 21,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "porter_service",
+        "value": 28,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "equiped_kitchen",
+        "value": 131,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "antiquity",
+        "value": 5,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "bathrooms",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "floor",
+        "value": 8,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "hotWater",
+        "value": 1,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "orientation",
+        "value": 8,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "rooms",
+        "value": 3,
+        "maxValue": 0,
+        "minValue": 0
+      },
+      {
+        "key": "surface",
+        "value": 160,
+        "maxValue": 0,
+        "minValue": 0
+      }
+    ],
+    "hasListLogo": true,
+    "hasSubsidies": false,
+    "hasVideo": 1,
+    "hasStamp": false,
+    "hasVgo": false,
+    "hasFloorPlans": false,
+    "id": 186549303,
+    "isBareOwnership": false,
+    "isCompleted": null,
+    "isDiscarded": false,
+    "isExternalContact": false,
+    "isFaved": false,
+    "isHighlighted": false,
+    "isMainTypology": false,
+    "isNew": false,
+    "isNewConstruction": false,
+    "isOccupied": false,
+    "isOpportunity": false,
+    "isPackAdvancePriority": false,
+    "isPackBasicPriority": false,
+    "isPackMinimalPriority": false,
+    "isPackPremiumPriority": true,
+    "isPremium": false,
+    "isPromotion": false,
+    "isTemporaryRental": false,
+    "isTop": true,
+    "isTopPlus": true,
+    "isTrackedPhone": true,
+    "isVirtualTour": false,
+    "isVisited": false,
+    "hasOpenHouse": false,
+    "location": "C. del Conde de Peñalver, Lista",
+    "minPrice": 0,
+    "multimedia": [
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/26e36451-df20-43f5-ae34-0f5418ca6cf7?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/85a1cc47-b106-4a30-9c37-6662e9965718?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/997c457d-e345-4065-9993-1883cfbad428?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/f6b5678c-03d6-40b3-822e-e7e38e4ad550?rule=original",
+        "roomType": "living room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/b51dea45-3808-48a1-a165-167d341631e7?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/94631fda-3a87-4b0e-981f-3506dac580ab?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9feebe16-7260-444a-8c51-f72438ddd058?rule=original",
+        "roomType": "kitchen"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/a1e92d71-7f6a-41dd-a80d-48fabfa638fc?rule=original",
+        "roomType": "dining room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/68232406-4277-457a-8b35-d7825cfd9354?rule=original",
+        "roomType": "dining room"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/608ea22e-1fb4-40b3-aaa6-4152ad4103dc?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/f8dcd11a-1e2b-4bcb-9712-84f8918ff492?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/824ae233-723d-43e3-ab26-75b6ffd28dd0?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/99a44b43-3e8a-489f-90cb-aef42b0f77a3?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/01c374c1-3182-4cc4-9152-f9bd0ced8d38?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/9a19a866-17cb-418d-a976-eb88eeee2e17?rule=original",
+        "roomType": "bedroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/c0b70bb1-4cac-49b0-8bc7-6dc0b93df56f?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/4267d9c5-1252-4319-ba06-09e4911563eb?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/fdda7a57-8944-4240-9eb6-5e70b4cc462d?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/df6c679b-b403-49af-86ca-6fc567401799?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/12f9dc76-14f3-465a-a714-cd3344c9c3b4?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/8d3cf07f-40ed-4cd6-b9d3-040233f1c8af?rule=original",
+        "roomType": "bathroom"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/847be01f-880d-4694-bfc7-7506b1dbc142?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/bc91419a-d1c4-45e1-ae63-8b5185db39d6?rule=original",
+        "roomType": "exterior"
+      },
+      {
+        "type": "image",
+        "src": "https://static.fotocasa.es/images/ads/7b0727c1-1cb3-4a7f-adec-70390dc89f33?rule=original",
+        "roomType": "other"
+      },
+      {
+        "type": "youtube",
+        "src": "https://www.youtube.com/watch?v=herOSioqMOc",
+        "roomType": null
+      }
+    ],
+    "otherFeaturesCount": 0,
+    "periodicityId": 0,
+    "phone": "914890879",
+    "price": "2.279.000 €",
+    "promotionId": 0,
+    "promotionLogo": "https://static.fotocasa.es/images/client/5cbf9036-d1e9-422b-878f-1943c01d47df/20230725114839?rule=original",
+    "promotionUrl": null,
+    "promotionTitle": null,
+    "promotionTypologiesCounter": null,
+    "promotionTypologies": [],
+    "publisherId": "5cbf9036-d1e9-422b-878f-1943c01d47df",
+    "rawPrice": 2279000,
+    "realEstateAdId": "532eeb81-a07a-4f0b-b2a7-129172ee539c",
+    "reducedPrice": null,
+    "subtypeId": 1,
+    "transactionTypeId": 1,
+    "typeId": 2,
+    "userId": null
+  }
+]
