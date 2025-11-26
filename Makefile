@@ -54,3 +54,11 @@ clean:
 
 install-package:
 	pip install -e .
+
+##@ Data Quality
+
+data-validate: ## Valida calidad de todos los datos
+	python scripts/validate_data.py
+
+data-validate-latest: ## Valida solo el archivo más reciente
+	python scripts/validate_data.py $$(ls -t data/raw/fotocasa_*.json | head -1)

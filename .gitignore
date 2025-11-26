@@ -49,3 +49,41 @@ htmlcov/
 
 # Jupyter
 .ipynb_checkpoints/
+
+# MLflow (no versionar runs locales)
+/mlruns
+
+# Reports temporales (se regeneran)
+/reports/*.png
+/reports/*.csv
+/notebooks/outputs/
+
+# Mantener estructura
+!reports/.gitkeep
+!reports/figures/.gitkeep
+
+# MLflow (solo raíz, no en subdirectorios)
+/mlruns
+/notebooks/mlruns
+
+# Debugging temporal
+/debug_output
+
+# Coverage reports
+/htmlcov
+/.coverage
+
+# Estructuras temporales
+structure.txt
+
+# Jupyter checkpoints
+.ipynb_checkpoints/
+
+# Reports temporales (se regeneran)
+/reports/figures/*.png
+/reports/metrics/*.csv
+
+# Mantener directorios vacíos
+!reports/figures/.gitkeep
+!reports/metrics/.gitkeep
+!reports/analysis/.gitkeep
