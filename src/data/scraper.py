@@ -213,7 +213,13 @@ class FotocasaScraper:
         )
 
     def _build_url(self, location, property_type, operation, page) -> str:
-        type_slug = "viviendas" if property_type in ["piso", "casa", "vivienda"] else property_type
+        if property_type in ["piso", "casa", "vivienda"]:
+            type_slug = "viviendas"
+        elif property_type == "local":
+            type_slug = "locales"  # ← FIX: plural
+        else:
+            type_slug = property_type
+        
         base = f"/es/{operation}/{type_slug}/{location}/todas-las-zonas/l"
         if page > 1:
             base += f"/{page}"

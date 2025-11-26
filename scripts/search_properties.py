@@ -30,8 +30,8 @@ def main():
     parsed = parser.parse(query)
     
     print("📊 Parsed Query:")
-    print(f"   Direct filters: {parsed.direct_filters.dict(exclude_none=True)}")
-    print(f"   Indirect filters: {parsed.indirect_filters.dict(exclude_none=True)}")
+    print(f"   Direct filters: {parsed.direct_filters.model_dump(exclude_none=True)}")
+    print(f"   Indirect filters: {parsed.indirect_filters.model_dump(exclude_none=True)}")
     print(f"   Confidence: {parsed.confidence:.2f}\n")
     
     # 2. Scrape con direct filters
