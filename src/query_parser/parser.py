@@ -7,6 +7,9 @@ from anthropic import Anthropic
 from typing import Optional
 import mlflow
 
+from dotenv import load_dotenv
+load_dotenv()
+
 from .schemas import ParsedQuery
 from .prompts import get_prompt
 
