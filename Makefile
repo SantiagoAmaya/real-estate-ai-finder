@@ -62,3 +62,11 @@ data-validate: ## Valida calidad de todos los datos
 
 data-validate-latest: ## Valida solo el archivo más reciente
 	python scripts/validate_data.py $$(ls -t data/raw/fotocasa_*.json | head -1)
+
+##@ Property Analysis
+
+analyze-property: ## Analiza una propiedad específica (make analyze-property ID=12345)
+	python scripts/analyze_property.py $(ID)
+
+analyze-all: ## Analiza todas las propiedades
+	python scripts/analyze_property.py all
