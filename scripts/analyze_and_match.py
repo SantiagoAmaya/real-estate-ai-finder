@@ -17,6 +17,14 @@ from src.property_analysis.text_analyzer import PropertyTextAnalyzer
 from src.property_analysis.schemas import QueryRequirement
 
 def main():
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("query", nargs="+", help="Search query")
+    parser.add_argument("--backend", choices=["api", "local"], default="api",
+                       help="Embedding backend (default: api)")
+    args = parser.parse_args()
+    
+    query = " ".join(args.query)
     if len(sys.argv) < 2:
         print("❌ Uso: python scripts/analyze_and_match.py 'tu query aquí'")
         sys.exit(1)
@@ -36,7 +44,8 @@ def main():
     print(f"📊 Analyzing {len(properties)} properties...\n")
     
     # Analizar
-    analyzer = PropertyTextAnalyzer()
+    analyzer = PropertyTextAnalyzer(backend=args.backend)
+    print(f"🔧 Using backend: {args.backend}")
     analyses = analyzer.analyze_batch(properties, generate_embeddings=True)
     
     # Match

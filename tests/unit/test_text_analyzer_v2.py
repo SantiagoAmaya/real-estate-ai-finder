@@ -14,7 +14,7 @@ skip_if_no_key = pytest.mark.skipif(
 @skip_if_no_key
 def test_dynamic_feature_extraction():
     """Test que extrae features no predefinidos"""
-    analyzer = PropertyTextAnalyzer()
+    analyzer = PropertyTextAnalyzer(backend="api")
     
     description = """
     Magnífico local con cocina industrial completamente equipada.
@@ -37,7 +37,7 @@ def test_dynamic_feature_extraction():
 @skip_if_no_key
 def test_embedding_generation():
     """Test generación de embeddings"""
-    analyzer = PropertyTextAnalyzer()
+    analyzer = PropertyTextAnalyzer(backend="api")
     
     description = "Local luminoso con entrada independiente"
     result = analyzer.analyze("test_002", description, generate_embedding=True)
@@ -54,7 +54,7 @@ def test_embedding_generation():
 @skip_if_no_key
 def test_semantic_matching():
     """Test matching semántico"""
-    analyzer = PropertyTextAnalyzer()
+    analyzer = PropertyTextAnalyzer(backend="api")
     
     # Analizar propiedad
     description = "Local con cocina equipada y terraza de 20m²"
@@ -80,7 +80,7 @@ def test_semantic_matching():
 @skip_if_no_key
 def test_fuzzy_feature_matching():
     """Test que sinónimos funcionan"""
-    analyzer = PropertyTextAnalyzer()
+    analyzer = PropertyTextAnalyzer(backend="api")
     
     # Propiedad menciona "cocina americana"
     description = "Local con cocina americana integrada"
@@ -93,3 +93,15 @@ def test_fuzzy_feature_matching():
     
     # Debe matchear por similitud semántica
     assert match_result.feature_match_score > 0 or len(match_result.matched_features) > 0
+
+@skip_if_no_key
+@pytest.mark.slow  # Marcar como slow
+def test_local_backend():
+    """Test backend local (lento)"""
+    analyzer = PropertyTextAnalyzer(backend="local")
+    
+    description = "Local con terraza"
+    result = analyzer.analyze("test_local", description, generate_embedding=True)
+    
+    assert result.text_embedding is not None
+    assert len(result.text_embedding) == 384  # MiniLM dims
