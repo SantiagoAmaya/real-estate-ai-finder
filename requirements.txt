@@ -40,4 +40,4 @@ mypy>=1.7.0
 pre-commit>=3.5.0
 
 # Data Quality
-great-expectations>=0.18.0
+great-expectations>=0.18.0rich>=13.0.0
