@@ -36,12 +36,41 @@ class Property:
     
     def to_dict(self) -> dict:
         return asdict(self)
+    
+    
 
 @dataclass
 class ScraperResult:
     properties: List[Property]
     total_found: int
     scraping_time_seconds: float
+
+    @staticmethod
+    def _clean_text(text: str) -> str:
+        """Limpia texto de caracteres problemáticos"""
+        if not text:
+            return text
+        
+        # Eliminar surrogates y caracteres de control
+        cleaned = text.encode('utf-8', errors='ignore').decode('utf-8', errors='ignore')
+        
+        # Eliminar caracteres de control excepto newline/tab
+        cleaned = ''.join(char for char in cleaned if ord(char) >= 32 or char in '\n\t')
+        
+        return cleaned
+
+    def _clean_property(self, prop: Property) -> dict:
+        """Limpia una property antes de serializar"""
+        prop_dict = prop.to_dict()
+        
+        # Campos de texto a limpiar
+        text_fields = ['title', 'description', 'location', 'phone']
+        
+        for field in text_fields:
+            if field in prop_dict and isinstance(prop_dict[field], str):
+                prop_dict[field] = self._clean_text(prop_dict[field])
+        
+        return prop_dict
     
     def save(
         self, 
@@ -60,6 +89,12 @@ class ScraperResult:
         if filepath is None:
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filepath = Path(f"data/raw/fotocasa_{timestamp}.json")
+        else:
+            # AÑADIR: Si es directorio, generar filename
+            filepath = Path(filepath)
+            if filepath.is_dir() or not filepath.suffix:  # Es directorio o sin extensión
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                filepath = filepath / f"fotocasa_{timestamp}.json"
         
         filepath.parent.mkdir(parents=True, exist_ok=True)
         
@@ -96,10 +131,19 @@ class ScraperResult:
                 ) if any(p.size_m2 for p in self.properties) else 0,
             }
         }
+
+        print("Checking for problematic properties...")
+        for i, p in enumerate(self.properties):
+            try:
+                json.dumps(p.to_dict(), ensure_ascii=False)
+            except UnicodeEncodeError as e:
+                print(f"⚠️  Property {i} ({p.id}) has encoding issues:")
+                print(f"   Title: {p.title[:50]}...")
+                print(f"   Error: {e}")
         
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump({
-                "properties": [p.to_dict() for p in self.properties],
+                "properties": [self._clean_property(p) for p in self.properties],
                 "metadata": metadata
             }, f, indent=2, ensure_ascii=False)
         
@@ -137,6 +181,7 @@ class FotocasaScraper:
             'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         }
 
+    
     def scrape_properties(
         self,
         location: str = "madrid-capital",
