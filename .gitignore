@@ -88,3 +88,40 @@ structure.txt
 !reports/figures/.gitkeep
 !reports/metrics/.gitkeep
 !reports/analysis/.gitkeep
+
+# ============================================================
+# ML Models & Cache (NO trackear modelos grandes)
+# ============================================================
+
+# Qwen2-VL model files
+data/cache/qwen/
+*.safetensors
+*.safetensors.index.json
+
+# HuggingFace cache
+**/models--*/
+**/snapshots/
+**/.huggingface/
+
+# Model download artifacts
+*.lock
+*.incomplete
+*.tmp
+*.download
+
+# DVC tracked data (ya tienes DVC)
+/data/raw/*.json
+/data/processed/
+
+# General ML artifacts
+*.ckpt
+*.pth
+*.pt
+*.bin
+*.onnx
+*.pb
+
+# MLflow
+mlruns/
+mlartifacts/
+
