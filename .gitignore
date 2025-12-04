@@ -125,3 +125,9 @@ data/cache/qwen/
 mlruns/
 mlartifacts/
 
+
+# Experimental data & debug output
+data/debug/
+data/experiments/
+data/cache/
+
