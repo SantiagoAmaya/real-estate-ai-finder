@@ -1,6 +1,6 @@
 # 🏠 Real Estate AI Finder
 
-An MLOps project for intelligent real estate search in Barcelona using multi-modal AI.
+An MLOps project for intelligent real estate search in using multi-modal AI.
 
 ## 🎯 Project Goal
 
