@@ -11,6 +11,7 @@ Architecture:
 Budget: €20 = ~300 Claude Vision calls (2 images each)
 """
 import os
+import re
 from typing import List, Optional, Literal, Tuple
 from pathlib import Path
 import numpy as np
@@ -114,7 +115,7 @@ class VisionAnalyzer:
             )
         return self._qwen_analyzer
 
-    def generate_photo_description(self,image_urls: List[str],max_images: int = 3,target_features: Optional[List[str]] = None,force_mode: Optional[str] = None) -> str:
+    def generate_photo_description(self,image_urls: List[str],max_images: int = 3,target_features: Optional[List[str]] = None,force_mode: Optional[str] = None, user_query: Optional[str] = None) -> str:
         """
             Hybrid: genera descripción usando Claude o Qwen2 según modo
             
@@ -123,7 +124,7 @@ class VisionAnalyzer:
             Args:
                 image_urls: URLs de imágenes
                 max_images: Límite de imágenes a analizar
-                target_features: Features específicos a buscar (opcional)
+                user_query: Query del usuario para contextualizar (opcional)
                 force_mode: Forzar modo específico (override)
             
             Returns:
@@ -133,7 +134,6 @@ class VisionAnalyzer:
         # Select key images
         selected = self.select_key_images(
             image_urls,
-            target_features or [],
             max_images
         )
 
@@ -143,28 +143,30 @@ class VisionAnalyzer:
         if mode == 'qwen_only':
             description, confidence = self.qwen_analyzer.generate_description(
                 image_urls=selected_urls,
-                max_images=max_images
+                max_images=max_images,
+                user_query=user_query
             )
             self.qwen_calls_made += len(selected_urls)
             return description
         
         # === MODE: claude_only ===
         if mode == 'claude_only':
-            return self._generate_description_claude(selected, target_features)
+            return self._generate_description_claude(selected, user_query)
         
         # === MODE: qwen_primary ===
         if mode == 'qwen_primary':
             # Try Qwen first
             description, confidence = self.qwen_analyzer.generate_description(
                 image_urls=selected_urls,
-                max_images=max_images
+                max_images=max_images,
+                user_query=user_query   
             )
             self.qwen_calls_made += len(selected_urls)
             
             # If confidence low, fallback to Claude
             if confidence < self.qwen_confidence_threshold:
                 print(f"  ⚠️  Qwen confidence {confidence:.2f} < {self.qwen_confidence_threshold}, using Claude fallback")
-                return self._generate_description_claude(selected, target_features)
+                return self._generate_description_claude(selected, user_query)
             
             return description
         
@@ -176,46 +178,61 @@ class VisionAnalyzer:
                 print(f"  ⚠️  Claude budget exhausted, using Qwen2 fallback")
                 description, _ = self.qwen_analyzer.generate_description(
                     image_urls=selected_urls,
-                    max_images=max_images
+                    max_images=max_images,
+                    user_query=user_query
                 )
                 self.qwen_calls_made += len(selected_urls)
                 return description
             
-            return self._generate_description_claude(selected, target_features)
+            return self._generate_description_claude(selected, user_query)
         
         # Fallback
-        return self._generate_description_claude(selected, target_features)
+        return self._generate_description_claude(selected, user_query)
     
     def _generate_description_claude(
         self,
         selected: List[Tuple[str, str]],
-        target_features: Optional[List[str]] = None
+        user_query: Optional[str] = None
     ) -> str:
         
-        """Generate description using Claude Vision (original implementation)"""
+        """Claude Vision genera descripción OBJETIVA basada en query del usuario
+        El text_analyzer después extraerá features dinámicamente
+        """
        
         # Build prompt
-        features_hint = ""
-        if target_features:
-            features_hint = f"\n\nPresta especial atención a: {', '.join(target_features)}"
+        query_context = ""
+        if user_query:
+            query_context = f"""
+
+            CONTEXTO - El usuario busca:
+            "{user_query}"
+
+            Describe lo que ves en la imagen que sea RELEVANTE para este tipo de búsqueda.
+            Si el usuario busca "techos altos", menciona la altura de los techos.
+            Si busca "entrada independiente", describe el tipo de acceso.
+            Si busca "espacio diáfano", describe la distribución."""
         
         prompt = f"""Eres un agente inmobiliario profesional describiendo esta propiedad.
 
-                    Analiza estas fotos y describe la propiedad como si la estuvieras visitando en persona.
+                    Analiza esta foto de forma OBJETIVA y FACTUAL, sin embellecer ni usar lenguaje de venta.
 
-                    IMPORTANTE - Incluye detalles sobre:
+                    Describe SOLO lo que ves:
                     1. Tipo de propiedad (local comercial, piso, oficina, etc)
                     2. Acceso/entrada (¿entrada independiente desde calle? ¿portal compartido?)
-                    3. Luz natural (ventanas, orientación, luminosidad)
+                    3. Luz natural (número de ventanas visibles, tamaño aproximado)
                     4. Estado (reformado, a reformar, nuevo)
                     5. Distribución (diáfano, habitaciones, espacios)
                     6. Características visuales (terraza, balcón, vistas, etc)
-                    {features_hint}
+                    7. Techos (altura aproximada: estándar 2.5m, altos 3.5m+, muy altos 4m+)
+                    8. Suelos (tipo: cerámica, parquet, hormigón, baldosa)
+                    {query_context}
 
-                    Responde SOLO con texto descriptivo en español, como si fuera una extensión del anuncio.
-                    NO uses formato de lista, escribe en párrafos naturales."""
+                    Responde en español con descripción FACTUAL en párrafos breves. Si no sabes algo mejor no inventes.
+                    NO uses adjetivos comerciales tipo "magnífico", "espectacular", "acogedor".
+                    Máximo 150 palabras por imagen."""
         
         descriptions = []
+        images_analyzed = 0
         
         for idx, (url, purpose) in enumerate(selected):
             # Check budget
@@ -237,33 +254,49 @@ class VisionAnalyzer:
                 image.save(buffered, format="JPEG", quality=85)
                 img_base64 = base64.b64encode(buffered.getvalue()).decode()
                 
-                # Call Claude
-                response = self.claude_client.messages.create(
-                    model=self.claude_model,
-                    max_tokens=400,
-                    messages=[{
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": "image/jpeg",
-                                    "data": img_base64
-                                }
-                            },
-                            {
-                                "type": "text",
-                                "text": prompt
-                            }
-                        ]
-                    }]
-                )
+                # Call Claude with retry
+                max_retries = 2
+                description = None
                 
-                description = response.content[0].text.strip()
-                descriptions.append(f"[Desde foto {idx+1} - {purpose}]: {description}")
+                for attempt in range(max_retries):
+                    try:
+                        response = self.claude_client.messages.create(
+                            model=self.claude_model,
+                            max_tokens=400,
+                            messages=[{
+                                "role": "user",
+                                "content": [
+                                    {
+                                        "type": "image",
+                                        "source": {
+                                            "type": "base64",
+                                            "media_type": "image/jpeg",
+                                            "data": img_base64
+                                        }
+                                    },
+                                    {
+                                        "type": "text",
+                                        "text": prompt
+                                    }
+                                ]
+                            }]
+                        )
+                        
+                        description = response.content[0].text.strip()
+                        break  # Success
+                    
+                    except Exception as e:
+                        if attempt < max_retries - 1:
+                            print(f"  ⚠️  Retry {attempt+1}/{max_retries} for image {idx+1}")
+                            continue
+                        else:
+                            raise
                 
-                # Update budget
+                if description:
+                    descriptions.append(description)  # Sin prefijo, para consolidar
+                    images_analyzed += 1
+                
+                ###### Update budget
                 self.claude_calls_made += 1
                 self.total_cost += 0.025
                 
@@ -271,7 +304,18 @@ class VisionAnalyzer:
                 print(f"⚠️  Error processing {url}: {e}")
                 continue
         
-        return "\n\n".join(descriptions)
+        if images_analyzed > 0:
+           print(f"    ✅ Analyzed {images_analyzed} images")
+
+        # Consolidate multiple descriptions into one
+        if len(descriptions) > 1 and user_query:
+            print(f"    🔄 Consolidating {len(descriptions)} descriptions...")
+            consolidated = self._consolidate_descriptions(descriptions, user_query)
+            return f"[Análisis de {images_analyzed} imágenes]: {consolidated}"
+        elif descriptions:
+            return f"[Análisis de imagen]: {descriptions[0]}"
+        else:
+            return ""
 
     
     @property
@@ -294,10 +338,100 @@ class VisionAnalyzer:
         
         return self._clip_model, self._clip_preprocess
     
+    def _consolidate_descriptions(
+        self,
+        individual_descriptions: List[str],
+        user_query: str
+        ) -> str:
+        """
+        Consolida múltiples descripciones de imágenes en una síntesis concisa
+        ACTUALIZADO: Más robusto contra respuestas inesperadas de Claude
+        """
+        if not individual_descriptions:
+            return ""
+        
+        if len(individual_descriptions) == 1:
+            return individual_descriptions[0]
+        
+        # Combine all descriptions
+        combined = "\n\n".join([
+            f"Imagen {i+1}: {desc}" 
+            for i, desc in enumerate(individual_descriptions)
+        ])
+        
+        # Consolidation prompt - MUY EXPLÍCITO sobre formato
+        consolidation_prompt = f"""Tienes {len(individual_descriptions)} descripciones de imágenes de la misma propiedad.
+
+    DESCRIPCIONES INDIVIDUALES:
+    {combined}
+
+    QUERY DEL USUARIO:
+    "{user_query}"
+
+    TAREA:
+    Sintetiza estas descripciones en UN SOLO PÁRRAFO CONCISO (máximo 120 palabras) que:
+    1. Elimine información redundante entre imágenes
+    2. Priorice información RELEVANTE para el query del usuario
+    3. Sea FACTUAL sin opiniones
+    4. Incluya: tipo de espacio, acceso, techos, suelos, luz, distribución, estado
+
+    FORMATO DE RESPUESTA:
+    - Responde SOLO con el párrafo consolidado en español
+    - NO uses formato JSON
+    - NO uses comillas extras
+    - NO uses markdown
+    - SOLO texto plano descriptivo"""
+        
+        max_retries = 2
+        
+        for attempt in range(max_retries):
+            try:
+                response = self.claude_client.messages.create(
+                    model=self.claude_model,
+                    max_tokens=300,
+                    messages=[{
+                        "role": "user",
+                        "content": consolidation_prompt
+                    }]
+                )
+                
+                consolidated = response.content[0].text.strip()
+                
+                # Limpieza adicional por si Claude ignora instrucciones
+                # Remover markdown fences si existen
+                if consolidated.startswith("```"):
+                    consolidated = consolidated.split("```")[1]
+                    if consolidated.startswith("json") or consolidated.startswith("text"):
+                        consolidated = consolidated[4:]
+                    consolidated = consolidated.strip()
+                
+                # Remover comillas externas si existen
+                if consolidated.startswith('"') and consolidated.endswith('"'):
+                    consolidated = consolidated[1:-1]
+                
+                # Update budget (1 extra call for consolidation)
+                self.claude_calls_made += 1
+                self.total_cost += 0.003  # Cheaper - no images
+                
+                return consolidated
+                
+            except Exception as e:
+                if attempt < max_retries - 1:
+                    print(f"⚠️  Consolidation error (attempt {attempt+1}/{max_retries}), retrying...")
+                    continue
+                else:
+                    print(f"⚠️  Consolidation error: {e}")
+                    # Fallback: just join with newlines
+                    return "\n\n".join(individual_descriptions[:2])  # First 2 only
+        
+        # Final fallback
+        return "\n\n".join(individual_descriptions[:2])
+
+    
     def select_key_images(
         self,
         image_urls: List[str],
-        query_requirements: List[str],
+        target_features: Optional[List[str]] = None,
         max_images: int = 5
     ) -> List[Tuple[str, str]]:
         """
@@ -311,6 +445,8 @@ class VisionAnalyzer:
         - Images with keywords in URL/filename
         - Max N images to control cost
         """
+        if target_features is None:
+           target_features = []
         selected = []
         
         # Priority 1: First 2 (exterior likely)
@@ -445,7 +581,7 @@ class VisionAnalyzer:
         self,
         image_url: str,
         query_text: str,
-        target_features: Optional[List[str]] = None
+        user_query: Optional[str] = None
     ) -> List[DetectedFeature]:
         """
         Dynamic feature extraction using Claude Vision
@@ -593,7 +729,7 @@ Si no detectas ninguna característica relevante, devuelve lista vacía."""
         property_id: str,
         image_urls: List[str],
         query_text: str,
-        target_features: List[str],
+        target_features: Optional[List[str]] = None,
         max_images: int = 2
     ) -> VisionAnalysis:
         """

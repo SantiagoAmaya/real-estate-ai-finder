@@ -73,7 +73,56 @@ def parse_arguments():
                        help="Disable vision analysis completely")
     parser.add_argument("--max-results", type=int, default=10,
                        help="Max properties to show (default: 10)")
+    parser.add_argument("--verbose", action="store_true",
+                       help="Show detailed vision descriptions")
     return parser.parse_args()
+
+def save_and_display_vision_details(result: dict, output_dir: Path, args):
+    """Save images and display vision description in verbose mode"""
+    if not args.verbose or not result.get('needs_vision'):
+        return
+    
+    prop = result['property']
+    prop_id = prop['id']
+    
+    # Create property debug dir
+    prop_dir = output_dir / prop_id
+    prop_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Save first 3 images
+    import requests
+    from PIL import Image
+    from io import BytesIO
+    
+    images_saved = []
+    for idx, url in enumerate(prop.get('images', [])[:3], 1):
+        try:
+            response = requests.get(url, timeout=10)
+            img = Image.open(BytesIO(response.content))
+            filepath = prop_dir / f"image_{idx}.jpg"
+            img.save(filepath)
+            images_saved.append(str(filepath))
+        except:
+            continue
+    
+    # Extract vision description from analysis
+    analysis = result.get('text_analysis')
+    if analysis and hasattr(analysis, 'original_text'):
+        full_text = analysis.original_text or ""
+        
+        # Find vision part (starts with [Análisis de or [Foto)
+        if "[Análisis de" in full_text or "[Foto" in full_text:
+            parts = full_text.split("\n\n")
+            vision_parts = [p for p in parts if p.startswith("[Análisis de") or p.startswith("[Foto")]
+            
+            if vision_parts:
+                return {
+                    'images': images_saved,
+                    'description': "\n".join(vision_parts),
+                    'path': str(prop_dir)
+                }
+    
+    return None
 
 def main():
     args = parse_arguments()
@@ -117,7 +166,7 @@ def main():
         "location": parsed.direct_filters.location or "barcelona-capital",
         "property_type": parsed.direct_filters.property_type or "vivienda",
         "operation": parsed.direct_filters.operation or "comprar",
-        "max_pages": 2
+        "max_pages": 1
     }
     
     if parsed.direct_filters.min_price:
@@ -318,6 +367,20 @@ def main():
         # Missing
         if match.missing_requirements:
             console.print(f"   ⚠️  Missing: {', '.join(match.missing_requirements)}")
+
+        # Verbose: Show vision description
+        if args.verbose and used_vision:
+            # Save images and get description
+           from pathlib import Path
+           output_dir = Path("data/debug/end_to_end")
+           vision_details = save_and_display_vision_details(result, output_dir, args)
+          
+           if vision_details:
+               console.print(f"\n   [bold cyan]🔍 Vision Analysis:[/bold cyan]")
+               console.print(f"   {vision_details['description'][:300]}...")
+               console.print(f"\n   [bold]📸 Images saved:[/bold] {vision_details['path']}")
+               console.print(f"   open {vision_details['path']}")
+        
         
         console.print(f"   🔗 {prop['url']}\n")
     
@@ -363,6 +426,8 @@ def main():
             console.print(f"    • {feat}: {count} properties")
     
     console.print(f"\n✅ End-to-end test complete!")
+
+    
 
 if __name__ == "__main__":
     main()

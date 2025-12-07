@@ -1,10 +1,14 @@
 """
 Schemas flexibles para análisis de propiedades
-UPDATED: Added CombinedAnalysis for multi-modal analysis
+UPDATED: Added schemas for Tool Calling (Structured Outputs)
 """
 from pydantic import BaseModel, Field
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Literal
 import numpy as np
+
+# ============================================================================
+# CORE SCHEMAS (Existentes - mantener compatibilidad)
+# ============================================================================
 
 class DetectedFeature(BaseModel):
     """Feature detectado dinámicamente"""
@@ -39,6 +43,9 @@ class PropertyAnalysis(BaseModel):
     description_length: int = 0
     overall_quality_score: float = Field(0.0, ge=0, le=1)
     analysis_version: str = "v2.0"
+    
+    # NUEVO: Texto original para reference (usado en verbose mode)
+    original_text: Optional[str] = Field(None, exclude=True, description="Texto original analizado")
     
     def get_feature(self, name: str) -> Optional[DetectedFeature]:
         """Busca feature por nombre exacto"""
@@ -210,3 +217,153 @@ class CombinedAnalysis(BaseModel):
     
     class Config:
         arbitrary_types_allowed = True
+
+
+# ============================================================================
+# TOOL CALLING SCHEMAS (NUEVO - para Structured Outputs)
+# ============================================================================
+
+class FeatureSchema(BaseModel):
+    """
+    Schema para Tool Calling - garantiza JSON válido de Anthropic
+    Similar a DetectedFeature pero optimizado para LLM responses
+    """
+    name: str = Field(
+        description=(
+            "Nombre del feature en snake_case. Ejemplos: "
+            "'entrada_independiente', 'techos_altos', 'cocina_equipada', "
+            "'terraza_privada', 'reformado', 'ultima_planta'"
+        )
+    )
+    
+    value: Optional[str] = Field(
+        default=None,
+        description=(
+            "Valor específico si aplica. Ejemplos: "
+            "'3.5m' para techos, '20m²' para terraza, 'L3' para metro, "
+            "'presente'/'ausente' para binarios"
+        ),
+        max_length=50
+    )
+    
+    confidence: float = Field(
+        ge=0.0,
+        le=1.0,
+        description=(
+            "Confianza 0-1 basada en evidencia textual. "
+            "1.0 = explícito, 0.8 = implícito claro, 0.5 = inferido, <0.5 = especulativo"
+        )
+    )
+    
+    source: Literal["description", "image", "structured"] = Field(
+        default="description",
+        description="Origen del feature: description (texto), image (foto), structured (datos)"
+    )
+    
+    evidence: Optional[str] = Field(
+        default=None,
+        description="Cita textual que justifica la detección (máx 150 chars)",
+        max_length=150
+    )
+
+
+class PropertyFeaturesResponse(BaseModel):
+    """
+    Response estructurado para Tool Calling
+    Anthropic garantiza que siempre cumple este schema (100% JSON válido)
+    """
+    detected_features: List[FeatureSchema] = Field(
+        default=[],  # Default vacío si no hay features
+        description="Lista completa de features detectados en la propiedad",
+        min_items=0,
+        max_items=50
+    )
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "detected_features": [
+                    {
+                        "name": "entrada_independiente",
+                        "value": "desde_calle",
+                        "confidence": 0.95,
+                        "source": "description",
+                        "evidence": "acceso directo desde la calle"
+                    },
+                    {
+                        "name": "techos_altos",
+                        "value": "3.5m",
+                        "confidence": 0.85,
+                        "source": "description",
+                        "evidence": "techos de 3.5 metros de altura"
+                    }
+                ]
+            }
+        }
+
+
+class ConsolidatedDescription(BaseModel):
+    """
+    Schema para consolidación de descripciones de visión
+    OPCIONAL: Puede usarse con Tool Calling para consolidación estructurada
+    """
+    consolidated_text: str = Field(
+        description="Descripción consolidada en 1-2 párrafos máximo 150 palabras",
+        max_length=800
+    )
+    
+    key_observations: List[str] = Field(
+        description="3-5 observaciones clave más relevantes para el query",
+        min_items=0,
+        max_items=5
+    )
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "consolidated_text": (
+                    "Piso reformado con distribución diáfana. Techos 3m con vigas madera. "
+                    "Suelos cerámica clara. Acceso portal compartido (no independiente). "
+                    "Luz natural mediante puerta-ventana a balcón pequeño."
+                ),
+                "key_observations": [
+                    "Techos altura 3.0m con vigas madera vista",
+                    "Suelos cerámica fácil limpiar",
+                    "Acceso portal compartido, no entrada independiente",
+                    "Distribución diáfana cocina-salón",
+                    "Estado reformado/nuevo"
+                ]
+            }
+        }
+
+
+# ============================================================================
+# CONVERSION HELPERS
+# ============================================================================
+
+def feature_schema_to_detected_feature(fs: FeatureSchema) -> DetectedFeature:
+    """
+    Convierte FeatureSchema (Tool Calling) a DetectedFeature (uso interno)
+    Usado después de recibir response de Anthropic Tool Calling
+    """
+    return DetectedFeature(
+        name=fs.name,
+        value=fs.value,
+        confidence=fs.confidence,
+        source=fs.source,
+        evidence=fs.evidence
+    )
+
+
+def detected_feature_to_feature_schema(df: DetectedFeature) -> FeatureSchema:
+    """
+    Convierte DetectedFeature (uso interno) a FeatureSchema (Tool Calling)
+    Raramente necesario, pero útil para testing
+    """
+    return FeatureSchema(
+        name=df.name,
+        value=df.value,
+        confidence=df.confidence,
+        source=df.source,
+        evidence=df.evidence
+    )

@@ -413,9 +413,9 @@ class FotocasaScraper:
             location_parts = []
             
             if isinstance(address_data, dict):
-                municipality = address_data.get('municipality', '').strip()
-                district = address_data.get('district', '').strip()
-                neighborhood = address_data.get('neighborhood', '').strip()
+                municipality = (address_data.get('municipality') or '').strip()
+                district = (address_data.get('district') or '').strip()
+                neighborhood = (address_data.get('neighborhood') or '').strip()
                 
                 if neighborhood:
                     location_parts.append(neighborhood)

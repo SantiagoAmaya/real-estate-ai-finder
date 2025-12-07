@@ -2,9 +2,11 @@
 Flexible Text Analyzer con múltiples backends
 - API: Claude API (rápido, para desarrollo)
 - Local: sentence-transformers (lento, para producción)
+- NUEVO: Tool Calling para Structured Outputs (sin errores JSON)
 """
 import json
 import os
+import re
 from typing import Optional, List, Literal
 from pathlib import Path
 import numpy as np
@@ -17,6 +19,26 @@ load_dotenv()
 from .schemas import (
     PropertyAnalysis, DetectedFeature, QueryRequirement, MatchResult
 )
+
+# Tool Calling schemas con fallback inline
+try:
+    from .schemas import (
+        PropertyFeaturesResponse, FeatureSchema,
+        feature_schema_to_detected_feature
+    )
+except ImportError:
+    # Si schemas.py no tiene el helper, usar fallback
+    from .schemas import PropertyFeaturesResponse, FeatureSchema
+    
+    def feature_schema_to_detected_feature(fs) -> DetectedFeature:
+        return DetectedFeature(
+            name=fs.name,
+            value=fs.value,
+            confidence=fs.confidence,
+            source=fs.source,
+            evidence=getattr(fs, 'evidence', None)
+        )
+
 from .prompts import get_feature_extraction_prompt
 
 class PropertyTextAnalyzer:
@@ -26,6 +48,8 @@ class PropertyTextAnalyzer:
     Backends:
     - 'api': Claude API para embeddings (rápido, ~1-2s por propiedad)
     - 'local': sentence-transformers (lento primera vez, luego rápido)
+    
+    NUEVO: Usa Tool Calling para feature extraction (100% JSON válido)
     """
     
     def __init__(
@@ -35,13 +59,15 @@ class PropertyTextAnalyzer:
         embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2",
         prompt_version: str = "v2.0",
         cache_dir: Optional[str] = None,
-        api_key: Optional[str] = None
+        api_key: Optional[str] = None,
+        use_tool_calling: bool = True  # NUEVO: activar/desactivar Tool Calling
     ):
         self.backend = backend
         self.llm_model = llm_model
         self.embedding_model_name = embedding_model
         self.prompt_version = prompt_version
         self.prompt_config = get_feature_extraction_prompt(prompt_version)
+        self.use_tool_calling = use_tool_calling
         
         # API key para Claude
         api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
@@ -56,7 +82,8 @@ class PropertyTextAnalyzer:
         # Lazy load embedding model (solo si se usa backend local)
         self._local_embedding_model = None
         
-        print(f"✅ Analyzer ready (backend: {backend})")
+        mode = "Tool Calling" if use_tool_calling else "JSON text"
+        print(f"✅ Analyzer ready (backend: {backend}, extraction: {mode})")
     
     @property
     def local_embedding_model(self):
@@ -84,8 +111,11 @@ class PropertyTextAnalyzer:
                 description_length=len(description)
             )
         
-        # 1. Feature extraction con LLM
-        features = self._extract_features_with_llm(description)
+        # 1. Feature extraction con LLM (Tool Calling o legacy)
+        if self.use_tool_calling:
+            features = self._extract_features_tool_calling(description)
+        else:
+            features = self._extract_features_legacy(description)
         
         # 2. Generate embedding según backend
         embedding = None
@@ -104,47 +134,132 @@ class PropertyTextAnalyzer:
             detected_features=features,
             text_embedding=embedding.tolist() if embedding is not None else None,
             description_length=len(description),
-            overall_quality_score=float(quality_score)
+            overall_quality_score=float(quality_score),
+            original_text=description  # Guardar para verbose mode
         )
         
         # MLflow logging
         if log_to_mlflow and mlflow.active_run():
             mlflow.log_param(f"{property_id}_backend", self.backend)
             mlflow.log_param(f"{property_id}_prompt_version", self.prompt_version)
+            mlflow.log_param(f"{property_id}_extraction_mode", "tool_calling" if self.use_tool_calling else "legacy")
             mlflow.log_metric(f"{property_id}_num_features", len(features))
             mlflow.log_metric(f"{property_id}_quality_score", quality_score)
         
         return result
     
-    def _extract_features_with_llm(self, description: str) -> List[DetectedFeature]:
-        """Extrae features usando LLM"""
+    def _extract_features_tool_calling(self, description: str) -> List[DetectedFeature]:
+        """
+        Extrae features usando Anthropic Tool Calling (100% JSON válido)
+        
+        Tool Calling garantiza que la respuesta siempre sea JSON válido
+        que cumple con el schema de Pydantic. No más errores de parsing!
+        """
         try:
             desc_truncated = description[:3000]
+            
+            # Convertir Pydantic schema a JSON Schema para Anthropic
+            tool_schema = {
+                "name": "extract_property_features",
+                "description": "Extrae características estructuradas de una descripción de propiedad inmobiliaria",
+                "input_schema": PropertyFeaturesResponse.model_json_schema()
+            }
             
             response = self.llm_client.messages.create(
                 model=self.llm_model,
                 max_tokens=2000,
-                system=self.prompt_config["system"],
-                messages=[{"role": "user", "content": desc_truncated}]
+                tools=[tool_schema],
+                messages=[{
+                    "role": "user",
+                    "content": f"{self.prompt_config['system']}\n\nDESCRIPCIÓN:\n{desc_truncated}"
+                }]
             )
             
-            response_text = response.content[0].text.strip()
+            # Extract tool use from response
+            for block in response.content:
+                if block.type == "tool_use" and block.name == "extract_property_features":
+                    # Pydantic valida automáticamente
+                    validated = PropertyFeaturesResponse(**block.input)
+                    
+                    # Convert to DetectedFeature objects usando helper
+                    features = [
+                        feature_schema_to_detected_feature(f)
+                        for f in validated.detected_features
+                    ]
+                    return features
             
-            # Limpiar markdown
-            if response_text.startswith("```"):
-                response_text = response_text.split("```")[1]
-                if response_text.startswith("json"):
-                    response_text = response_text[4:]
-            response_text = response_text.strip()
+            # Fallback: si no hay tool use, intentar parsing legacy
+            print("⚠️  No tool use in response, trying legacy parsing...")
+            for block in response.content:
+                if hasattr(block, 'text'):
+                    return self._extract_features_legacy_parse(block.text)
             
-            result = json.loads(response_text)
-            features = [DetectedFeature(**f) for f in result.get("detected_features", [])]
-            
-            return features
+            return []
             
         except Exception as e:
-            print(f"⚠️  Feature extraction error: {e}")
-            return []
+            print(f"⚠️  Tool calling error: {e}")
+            # Fallback completo a legacy
+            return self._extract_features_legacy(description)
+    
+    def _extract_features_legacy(self, description: str) -> List[DetectedFeature]:
+        """Método legacy con retry para JSON malformado"""
+        max_retries = 2
+        
+        for attempt in range(max_retries):
+            try:
+                desc_truncated = description[:3000]
+                
+                response = self.llm_client.messages.create(
+                    model=self.llm_model,
+                    max_tokens=2000,
+                    system=self.prompt_config["system"],
+                    messages=[{"role": "user", "content": desc_truncated}]
+                )
+                
+                response_text = response.content[0].text.strip()
+                return self._extract_features_legacy_parse(response_text)
+                
+            except json.JSONDecodeError as e:
+                if attempt < max_retries - 1:
+                    print(f"⚠️  JSON parse error (attempt {attempt+1}/{max_retries}), retrying...")
+                    continue
+                else:
+                    print(f"⚠️  Feature extraction error: {e}")
+                    return []
+            except Exception as e:
+                print(f"⚠️  Feature extraction error: {e}")
+                return []
+        
+        return []
+    
+    def _extract_features_legacy_parse(self, response_text: str) -> List[DetectedFeature]:
+        """Parse JSON legacy con limpieza robusta"""
+        # Limpiar markdown
+        if response_text.startswith("```"):
+            response_text = response_text.split("```")[1]
+            if response_text.startswith("json"):
+                response_text = response_text[4:]
+        response_text = response_text.strip()
+        
+        # ROBUST JSON PARSING
+        try:
+            result = json.loads(response_text)
+        except json.JSONDecodeError:
+            # Try to fix common issues
+            # Remove trailing commas
+            response_text = re.sub(r',(\s*[}\]])', r'\1', response_text)
+            
+            # Fix missing commas between objects
+            response_text = re.sub(r'}\s*{', '},{', response_text)
+            
+            # Remove unescaped newlines in strings
+            response_text = re.sub(r'(?<!\\)\n', ' ', response_text)
+            
+            # Try again
+            result = json.loads(response_text)
+        
+        features = [DetectedFeature(**f) for f in result.get("detected_features", [])]
+        return features
     
     def _generate_embedding_api(self, property_id: str, text: str) -> Optional[np.ndarray]:
         """

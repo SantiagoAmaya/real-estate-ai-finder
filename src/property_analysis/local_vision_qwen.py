@@ -39,9 +39,9 @@ class Qwen2VisionAnalyzer:
     def model(self):
         """Lazy load model (only when needed)"""
         if self._model is None:
-            print(f"Loading Qwen2-VL model: {self.model_name} on RTX 5090...")
+            print(f"Loading Qwen2-VL model: {self.model_name}...")
             
-            # Check device (CUDA for Linux, MPS for Mac, CPU fallback)
+            # Check device
             if torch.cuda.is_available():
                 device_type = "cuda"
                 device_name = torch.cuda.get_device_name(0)
@@ -51,19 +51,32 @@ class Qwen2VisionAnalyzer:
             else:
                 device_type = "cpu"
                 device_name = "CPU (slow)"
-           
+            
             print(f"✅ Using: {device_type} - {device_name}")
             
+            # FIX 1: Disable problematic features for MPS
+            import os
+            os.environ['TORCH_COMPILE_DISABLE'] = '1'
+            
+            # FIX 2: Load model with MPS-compatible settings
             self._model = Qwen2VLForConditionalGeneration.from_pretrained(
                 self.model_name,
-                torch_dtype=torch.float16,
-                device_map=self.device,
-                cache_dir=str(self.cache_dir)
+                torch_dtype=torch.float16 if device_type == "cuda" else torch.float32,  # MPS needs float32
+                device_map="cpu",  # Load to CPU first
+                attn_implementation="eager",  # Disable flash attention
+                cache_dir=str(self.cache_dir) if str(self.cache_dir) != '.' else None
             )
+            
+            # FIX 3: Move to MPS manually after loading
+            if device_type == "mps":
+                print("  Moving model to MPS...")
+                self._model = self._model.to("mps")
+            elif device_type == "cuda":
+                self._model = self._model.to("cuda")
             
             self._processor = AutoProcessor.from_pretrained(
                 self.model_name,
-                cache_dir=str(self.cache_dir)
+                cache_dir=str(self.cache_dir) if str(self.cache_dir) != '.' else None
             )
             
             print("✅ Qwen2-VL loaded successfully")
@@ -86,27 +99,30 @@ class Qwen2VisionAnalyzer:
         prompt_template: Optional[str] = None,
         max_images: int = 3,
         max_new_tokens: int = 400
-    ) -> Tuple[str, float]:
-        """
-        Generate property description from images
-        
-        Returns:
-            (description: str, confidence: float)
-        """
+        ) -> Tuple[str, float]:
+        """Generate property description from images"""
         model, processor = self.model
+        
+        # Determine device
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        else:
+            device = "cpu"
         
         if prompt_template is None:
             prompt_template = """Eres un agente inmobiliario profesional. Describe esta propiedad en español.
 
-Incluye:
-1. Tipo de propiedad (local comercial, piso, oficina, etc)
-2. Acceso/entrada (¿entrada independiente desde calle? ¿portal compartido?)
-3. Luz natural (ventanas, orientación, luminosidad)
-4. Estado (reformado, a reformar, nuevo)
-5. Distribución (diáfano, habitaciones, espacios)
-6. Características visuales importantes
+    Incluye:
+    1. Tipo de propiedad (local comercial, piso, oficina, etc)
+    2. Acceso/entrada (¿entrada independiente desde calle? ¿portal compartido?)
+    3. Luz natural (ventanas, orientación, luminosidad)
+    4. Estado (reformado, a reformar, nuevo)
+    5. Distribución (diáfano, habitaciones, espacios)
+    6. Características visuales importantes
 
-Escribe en párrafos naturales, como extensión del anuncio."""
+    Escribe en párrafos naturales, como extensión del anuncio."""
         
         descriptions = []
         confidences = []
@@ -123,14 +139,8 @@ Escribe en párrafos naturales, como extensión del anuncio."""
                     {
                         "role": "user",
                         "content": [
-                            {
-                                "type": "image",
-                                "image": image
-                            },
-                            {
-                                "type": "text",
-                                "text": prompt_template
-                            }
+                            {"type": "image", "image": image},
+                            {"type": "text", "text": prompt_template}
                         ]
                     }
                 ]
@@ -152,23 +162,41 @@ Escribe en párrafos naturales, como extensión del anuncio."""
                     return_tensors="pt"
                 )
                 
-                # Auto-detect device
-                if torch.cuda.is_available():
-                    device = "cuda"
-                elif torch.backends.mps.is_available():
-                    device = "mps"
+                # FIX 4: Move inputs carefully for MPS
+                if device == "mps":
+                    # MPS requires manual movement of each tensor
+                    inputs = {
+                        k: v.to("mps") if isinstance(v, torch.Tensor) else v 
+                        for k, v in inputs.items()
+                    }
                 else:
-                    device = "cpu"
-                
-                inputs = inputs.to(device)
+                    inputs = inputs.to(device)
                 
                 # Generate
                 with torch.no_grad():
-                    outputs = model.generate(
-                        **inputs,
-                        max_new_tokens=max_new_tokens,
-                        do_sample=False  # Deterministic
-                    )
+                    try:
+                        outputs = model.generate(
+                            **inputs,
+                            max_new_tokens=max_new_tokens,
+                            do_sample=False,
+                            use_cache=True
+                        )
+                    except Exception as e:
+                        print(f"  ⚠️  Generation error: {e}")
+                        # Fallback to CPU
+                        if device == "mps":
+                            print("  Retrying on CPU...")
+                            model_cpu = self._model.to("cpu")
+                            inputs_cpu = {k: v.to("cpu") if isinstance(v, torch.Tensor) else v 
+                                        for k, v in inputs.items()}
+                            outputs = model_cpu.generate(
+                                **inputs_cpu,
+                                max_new_tokens=max_new_tokens,
+                                do_sample=False
+                            )
+                            self._model = self._model.to("mps")  # Move back
+                        else:
+                            raise
                 
                 # Decode
                 generated_ids = [
@@ -184,10 +212,10 @@ Escribe en párrafos naturales, como extensión del anuncio."""
                 
                 descriptions.append(f"[Imagen {idx+1}]: {description.strip()}")
                 
-                # Estimate confidence (heuristic based on length and coherence)
-                confidence = min(1.0, len(description.split()) / 50.0)  # More words = more confident
+                # Estimate confidence
+                confidence = min(1.0, len(description.split()) / 50.0)
                 if len(description.split()) < 20:
-                    confidence *= 0.5  # Penalize very short descriptions
+                    confidence *= 0.5
                 
                 confidences.append(confidence)
                 

@@ -66,7 +66,7 @@ class CombinedPropertyAnalyzer:
        property_id: str,
        description: str,
        image_urls: List[str],
-       target_features: Optional[List[str]] = None
+       user_query: str
         ) -> PropertyAnalysis:
        """
        Analiza propiedad usando Claude Vision para generar descripción desde fotos
@@ -78,7 +78,7 @@ class CombinedPropertyAnalyzer:
        photo_description = self.vision_analyzer.generate_photo_description(
            image_urls=image_urls,
            max_images=3,
-           target_features=target_features
+           user_query=user_query
        )
        
        # Combine descriptions
@@ -408,11 +408,22 @@ class CombinedPropertyAnalyzer:
                         print(f"  {i}/{top_n}: {prop_id}")
                         
                         # Generate photo description + reanalyze
-                        enhanced_analysis = self.analyze_with_vision_description(
-                            property_id=prop_id,
-                            description=prop.get('description', ''),
+                        print(f"    Analyzing {len(prop.get('images', []))} images...")
+                        # Versión actualizada con user_query
+                        photo_description = self.vision_analyzer.generate_photo_description(
                             image_urls=prop.get('images', []),
-                            target_features=decision.get('visual_features', [])
+                            max_images=3,
+                            user_query=query_text  # Pasar el query completo
+                        )
+                        
+                        # Combine descriptions
+                        combined_description = f"{prop.get('description', '')}\n\n{photo_description}"
+                        
+                        # Analyze combined text
+                        enhanced_analysis = self.text_analyzer.analyze(
+                            property_id=prop_id,
+                            description=combined_description,
+                            generate_embedding=True
                         )
                         
                         # Re-score with enhanced features
