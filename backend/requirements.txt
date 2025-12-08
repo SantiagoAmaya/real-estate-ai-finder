@@ -15,11 +15,7 @@ mlflow==2.10.2
 numpy==1.26.3
 pandas==2.2.0
 scikit-learn==1.4.0
-sentence-transformers==2.3.1
+#sentence-transformers==2.3.1
 pillow==10.2.0
 requests==2.31.0
 
-# Optional (if using local vision)
-torch==2.1.2
-transformers==4.37.2
-# qwen-vl-utils  # Uncomment if using Qwen locally
