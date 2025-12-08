@@ -1,0 +1,25 @@
+# FastAPI Backend Requirements
+
+# Core API
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+python-multipart==0.0.6
+pydantic==2.12.0
+
+# Your existing dependencies
+anthropic==0.18.1
+python-dotenv==1.0.0
+curl_cffi==0.6.2
+beautifulsoup4==4.12.2
+mlflow==2.10.2
+numpy==1.26.3
+pandas==2.2.0
+scikit-learn==1.4.0
+sentence-transformers==2.3.1
+pillow==10.2.0
+requests==2.31.0
+
+# Optional (if using local vision)
+torch==2.1.2
+transformers==4.37.2
+# qwen-vl-utils  # Uncomment if using Qwen locally
