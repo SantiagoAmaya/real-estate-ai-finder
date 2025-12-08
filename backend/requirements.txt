@@ -15,7 +15,10 @@ mlflow==2.10.2
 numpy==1.26.3
 pandas==2.2.0
 scikit-learn==1.4.0
-#sentence-transformers==2.3.1
 pillow==10.2.0
 requests==2.31.0
+loguru>=0.7.2
+PyYAML>=6.0
+great-expectations>=0.18.0
+qwen-vl-utils>=0.0.4
 

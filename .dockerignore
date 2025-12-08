@@ -35,6 +35,11 @@ tests/
 mlruns/
 monitoring/
 
+# Archivos que son para uso local
+src/property_analysis/local_vision_qwen.py
+src/property_analysis/text_analyzer_local.py
+src/property_analysis/vision_analyzer.py
+
 # Archivos específicos
 README.md
 MVP_README.md
