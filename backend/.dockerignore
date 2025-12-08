@@ -1,0 +1,41 @@
+# Git
+.git
+.gitignore
+
+# Python / Entorno
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+.venv
+ENV
+*.egg-info
+.coverage
+htmlcov
+
+# IDEs
+.vscode
+.idea
+
+# Datos Pesados (Esto soluciona tu primer error)
+data/
+# Si necesitas alguna subcarpeta de data, usa ! para incluirla, por ejemplo:
+# !data/config
+
+# Archivos irrelevantes para producción (hacen el build lento)
+notebooks/
+archive/
+debug_output/
+reports/
+docs/
+tests/
+mlruns/
+monitoring/
+
+# Archivos específicos
+README.md
+MVP_README.md
+Makefile
