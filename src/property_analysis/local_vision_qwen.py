@@ -32,6 +32,7 @@ class Qwen2VisionAnalyzer:
         self._model = None
         self._processor = None
         self.device = device
+        self.calls_made = 0
         
         print(f"✅ Qwen2VisionAnalyzer initialized (model will load on first use)")
     
@@ -218,6 +219,8 @@ class Qwen2VisionAnalyzer:
                     confidence *= 0.5
                 
                 confidences.append(confidence)
+
+                self.calls_made += 1
                 
             except Exception as e:
                 print(f"⚠️  Error processing image {url}: {e}")

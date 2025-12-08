@@ -1,10 +1,7 @@
 """
 FastAPI Backend for Real Estate AI Finder
 
-Endpoints:
-- POST /search: Search properties with natural language
-- GET /health: Health check
-- GET /status: System status
+RAILWAY OPTIMIZED: API-only backends, no local GPU dependencies
 """
 from fastapi import FastAPI, HTTPException, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,14 +24,14 @@ from src.property_analysis.schemas import QueryRequirement
 # Initialize FastAPI
 app = FastAPI(
     title="Real Estate AI Finder API",
-    description="Intelligent property search with multi-modal AI analysis",
+    description="Intelligent property search with AI (Railway deployment)",
     version="1.0.0"
 )
 
-# CORS middleware (allow Streamlit frontend)
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify Streamlit URL
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -46,25 +43,23 @@ app.add_middleware(
 # ============================================================================
 
 class SearchRequest(BaseModel):
-    """Search request from user"""
+    """Search request"""
     query: str = Field(..., description="Natural language search query in Spanish")
     api_key: str = Field(..., description="Anthropic API key")
-    backend: Literal["api", "local"] = Field(default="api", description="Text analysis backend")
-    vision_mode: Optional[Literal["claude_only", "qwen_only", "claude_primary", "qwen_primary"]] = Field(
+    vision_mode: Optional[Literal["claude_only", "claude_primary"]] = Field(
         default="claude_primary",
-        description="Vision analysis mode (None for text-only)"
+        description="Vision mode (Railway: only claude modes supported)"
     )
-    use_vision_agent: bool = Field(default=True, description="Use LLM agent to decide when to analyze images")
+    use_vision_agent: bool = Field(default=True, description="Use LLM to decide when to analyze images")
     max_results: int = Field(default=10, description="Max properties to return", ge=1, le=50)
-    skip_scrape: bool = Field(default=False, description="Use cached data instead of scraping")
+    skip_scrape: bool = Field(default=False, description="Use cached data")
     
     class Config:
         schema_extra = {
             "example": {
-                "query": "Local con entrada independiente Barcelona máximo 250mil",
+                "query": "Local entrada independiente Barcelona máx 250k",
                 "api_key": "sk-ant-api03-...",
-                "backend": "api",
-                "vision_mode": "qwen_only",
+                "vision_mode": "claude_primary",
                 "use_vision_agent": True,
                 "max_results": 10,
                 "skip_scrape": False
@@ -85,6 +80,8 @@ class PropertyResult(BaseModel):
     matched_features: List[str]
     missing_features: List[str]
     had_vision_analysis: bool
+    photo_description: Optional[str] = None
+    match_explanation: Optional[str] = None
     url: Optional[str] = None
 
 
@@ -104,6 +101,7 @@ class HealthResponse(BaseModel):
     status: str
     timestamp: str
     version: str
+    mode: str = "railway-api-only"
 
 
 # ============================================================================
@@ -111,12 +109,11 @@ class HealthResponse(BaseModel):
 # ============================================================================
 
 def validate_api_key(api_key: str) -> bool:
-    """Validate Anthropic API key by making a test call"""
+    """Validate Anthropic API key"""
     try:
         from anthropic import Anthropic
         client = Anthropic(api_key=api_key)
         
-        # Simple test call
         response = client.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=10,
@@ -126,6 +123,27 @@ def validate_api_key(api_key: str) -> bool:
     except Exception as e:
         print(f"API key validation failed: {e}")
         return False
+
+
+def validate_vision_mode(mode: Optional[str]) -> Optional[str]:
+    """Validate and correct vision mode for Railway"""
+    if mode is None:
+        return None
+    
+    # Railway only supports Claude modes (no GPU for Qwen)
+    valid_modes = ["claude_only", "claude_primary"]
+    
+    if mode in valid_modes:
+        return mode
+    
+    # Auto-correct qwen modes to claude
+    if mode in ["qwen_only", "qwen_primary"]:
+        print(f"⚠️  Vision mode '{mode}' not supported on Railway (no GPU)")
+        print(f"⚠️  Auto-correcting to 'claude_primary'")
+        return "claude_primary"
+    
+    # Unknown mode
+    raise ValueError(f"Unknown vision mode: {mode}. Use 'claude_only' or 'claude_primary'")
 
 
 def get_cached_properties(max_properties: int = 50) -> List[dict]:
@@ -140,7 +158,7 @@ def get_cached_properties(max_properties: int = 50) -> List[dict]:
     json_files = sorted(data_dir.glob("fotocasa_*.json"), reverse=True)
     
     properties = []
-    for json_file in json_files[:3]:  # Last 3 files
+    for json_file in json_files[:3]:
         try:
             with open(json_file) as f:
                 data = json.load(f)
@@ -151,6 +169,23 @@ def get_cached_properties(max_properties: int = 50) -> List[dict]:
     
     return properties[:max_properties]
 
+def _generate_match_explanation(prop: dict, match: MatchResult) -> str:
+    """Generate human-readable match explanation"""
+    score = match.final_score
+    
+    if score >= 0.7:
+        verdict = "Excelente match"
+    elif score >= 0.5:
+        verdict = "Buen match"
+    elif score >= 0.3:
+        verdict = "Match aceptable"
+    else:
+        verdict = "Match débil"
+    
+    matched = ", ".join([f.name.replace('_', ' ') for f in match.matched_features[:3]])
+    missing = ", ".join(match.missing_requirements[:3])
+    
+    return f"{verdict} ({score:.2f}). Encontrado: {matched or 'ninguno'}. Falta: {missing or 'ninguno'}."
 
 # ============================================================================
 # ENDPOINTS
@@ -160,8 +195,9 @@ def get_cached_properties(max_properties: int = 50) -> List[dict]:
 async def root():
     """Root endpoint"""
     return {
-        "message": "Real Estate AI Finder API",
+        "message": "Real Estate AI Finder API (Railway)",
         "version": "1.0.0",
+        "mode": "api-only",
         "docs": "/docs",
         "health": "/health"
     }
@@ -169,40 +205,43 @@ async def root():
 
 @app.get("/health", response_model=HealthResponse)
 async def health_check():
-    """Health check endpoint"""
+    """Health check"""
     return HealthResponse(
         status="healthy",
         timestamp=datetime.utcnow().isoformat(),
-        version="1.0.0"
+        version="1.0.0",
+        mode="railway-api-only"
     )
 
 
 @app.post("/search", response_model=SearchResponse)
 async def search_properties(request: SearchRequest):
     """
-    Search properties with natural language query
+    Search properties with natural language
     
-    This endpoint:
-    1. Parses the query to extract filters
-    2. Scrapes properties (or uses cache)
-    3. Analyzes properties (text + optional vision)
-    4. Ranks and returns top matches
+    Railway Optimized:
+    - Text analysis: Claude API only
+    - Vision analysis: Claude Vision API only
+    - No local GPU dependencies
     """
     start_time = datetime.utcnow()
     
     try:
-        # Validate API key first
+        # Validate API key
         print(f"Validating API key...")
         if not validate_api_key(request.api_key):
             raise HTTPException(
                 status_code=401,
-                detail="Invalid Anthropic API key. Please check your key and try again."
+                detail="Invalid Anthropic API key"
             )
         
         print(f"✅ API key valid")
         
-        # Set API key in environment for this request
+        # Set API key in environment
         os.environ["ANTHROPIC_API_KEY"] = request.api_key
+        
+        # Validate vision mode for Railway
+        vision_mode = validate_vision_mode(request.vision_mode)
         
         # ============================================================
         # STEP 1: Parse Query
@@ -211,23 +250,22 @@ async def search_properties(request: SearchRequest):
         query_parser = QueryParser()
         parsed = query_parser.parse(request.query)
         
-        print(f"  ✅ Parsed - Direct filters: {parsed.direct_filters.model_dump(exclude_none=True)}")
+        print(f"  ✅ Direct filters: {parsed.direct_filters.model_dump(exclude_none=True)}")
         print(f"  ✅ Indirect filters: {parsed.indirect_filters.model_dump(exclude_none=True)}")
         
         # ============================================================
-        # STEP 2: Get Properties (scrape or cache)
+        # STEP 2: Get Properties
         # ============================================================
         print(f"\n[STEP 2] Getting properties...")
         
         if request.skip_scrape:
             print(f"  📂 Loading from cache...")
             properties = get_cached_properties(max_properties=50)
-            print(f"  ✅ Loaded {len(properties)} properties from cache")
+            print(f"  ✅ Loaded {len(properties)} properties")
         else:
             print(f"  🔍 Scraping Fotocasa...")
             scraper = FotocasaScraper()
             
-            # Convert parsed filters to scraper params
             scraper_params = {
                 "location": parsed.direct_filters.location or "barcelona-capital",
                 "property_type": parsed.direct_filters.property_type or "vivienda",
@@ -247,7 +285,6 @@ async def search_properties(request: SearchRequest):
             result = scraper.scrape_properties(**scraper_params)
             properties = result.properties
             
-            # Save results
             if properties:
                 filepath = result.save("data/raw")
                 print(f"  ✅ Scraped {len(properties)} properties")
@@ -256,28 +293,28 @@ async def search_properties(request: SearchRequest):
         if not properties:
             raise HTTPException(
                 status_code=404,
-                detail="No properties found matching your criteria. Try different filters."
+                detail="No properties found. Try different filters."
             )
         
-        # Limit properties for analysis
         properties_to_analyze = properties[:min(20, len(properties))]
         print(f"  📊 Analyzing {len(properties_to_analyze)} properties")
         
         # ============================================================
-        # STEP 3: Analyze Properties
+        # STEP 3: Analyze Properties (API-only)
         # ============================================================
-        print(f"\n[STEP 3] Analyzing properties (backend: {request.backend}, vision: {request.vision_mode})")
+        print(f"\n[STEP 3] Analyzing properties (API-only mode)")
+        print(f"  Text: Claude API")
+        print(f"  Vision: {vision_mode or 'disabled'}")
         
-        # Initialize analyzer
+        # Initialize analyzer (API-only)
         analyzer = CombinedPropertyAnalyzer(
-            text_backend=request.backend,
-            vision_mode=request.vision_mode,
-            use_vision=request.vision_mode is not None,
-            use_vision_agent=request.use_vision_agent,
-            max_claude_calls=100
+            text_backend="api",  # Force API for Railway
+            enable_vision=vision_mode is not None,
+            vision_mode=vision_mode or "claude_primary",
+            vision_budget=100
         )
         
-        # Build requirements from indirect filters
+        # Build requirements
         requirements = []
         if parsed.indirect_filters.entrance_type:
             requirements.append(QueryRequirement(
@@ -296,7 +333,7 @@ async def search_properties(request: SearchRequest):
                 importance=0.7
             ))
         
-        # Convert Property objects to dicts
+        # Convert to dicts
         props_as_dicts = []
         for prop in properties_to_analyze:
             if hasattr(prop, 'to_dict'):
@@ -308,8 +345,9 @@ async def search_properties(request: SearchRequest):
         results = analyzer.analyze_batch_stage1(
             properties=props_as_dicts,
             query_text=request.query,
-            query_requirements=requirements if requirements else None,
-            top_n=5  # Top 5 get vision analysis
+            requirements=requirements if requirements else None,
+            use_vision_agent=request.use_vision_agent,
+            log_to_mlflow=False
         )
         
         print(f"  ✅ Analysis complete")
@@ -319,7 +357,6 @@ async def search_properties(request: SearchRequest):
         # ============================================================
         print(f"\n[STEP 4] Formatting response...")
         
-        # Convert to response format
         property_results = []
         for result in results[:request.max_results]:
             prop = result['property']
@@ -332,23 +369,40 @@ async def search_properties(request: SearchRequest):
                 size_m2=prop.get('size_m2'),
                 rooms=prop.get('rooms'),
                 location=prop.get('location', 'Unknown'),
-                description=prop.get('description', '')[:200] + "...",  # Truncate
-                images=prop.get('images', [])[:3],  # First 3 images
+                description=prop.get('description', '')[:200] + "...",
+                images=prop.get('images', [])[:3],
                 matched_features=[f.name for f in match.matched_features],
                 missing_features=match.missing_requirements,
                 had_vision_analysis=result.get('needs_vision', False),
+                photo_description=result.get('photo_description'),
+                match_explanation=self._generate_match_explanation(prop, match),
                 url=prop.get('url')
             ))
         
         # Get cost summary
-        cost_summary = analyzer.get_cost_summary()
+        status = analyzer.get_status()
+        cost_summary = {
+            'text_backend': 'api',
+            'text_cost_per_property': 0.003,
+            'total_properties': len(properties_to_analyze)
+        }
         
-        # Calculate processing time
+        if 'vision_budget' in status:
+            vision_budget = status['vision_budget']
+            cost_summary.update({
+                'vision_mode': vision_mode,
+                'vision_calls_made': vision_budget.get('claude_calls_made', 0),
+                'vision_cost_eur': vision_budget.get('total_cost_eur', 0.0),
+                'total_cost_eur': (0.003 * len(properties_to_analyze)) + vision_budget.get('total_cost_eur', 0.0)
+            })
+        else:
+            cost_summary['total_cost_eur'] = 0.003 * len(properties_to_analyze)
+        
         processing_time = (datetime.utcnow() - start_time).total_seconds()
         
         print(f"  ✅ Returning {len(property_results)} properties")
         print(f"  💰 Total cost: €{cost_summary.get('total_cost_eur', 0):.3f}")
-        print(f"  ⏱️  Processing time: {processing_time:.1f}s")
+        print(f"  ⏱️  Time: {processing_time:.1f}s")
         
         return SearchResponse(
             success=True,
@@ -383,13 +437,15 @@ async def search_properties(request: SearchRequest):
 async def startup_event():
     """Startup event"""
     print("=" * 60)
-    print("🚀 Real Estate AI Finder API Starting...")
+    print("🚀 Real Estate AI Finder API Starting (Railway)")
     print("=" * 60)
-    print(f"📍 Docs: http://localhost:8000/docs")
-    print(f"🏥 Health: http://localhost:8000/health")
+    print(f"📍 Mode: API-only (Claude)")
+    print(f"📍 Docs: /docs")
+    print(f"🏥 Health: /health")
     print("=" * 60)
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)

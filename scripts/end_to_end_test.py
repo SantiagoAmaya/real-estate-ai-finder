@@ -324,9 +324,14 @@ def main():
             vision_status = analyzer.vision_analyzer.get_budget_status()
             console.print(f"\n  Vision Statistics:")
             console.print(f"    Properties with vision: {sum(1 for r in results if r['needs_vision'])}")
-            console.print(f"    Claude calls: {vision_status['claude_calls_made']}")
-            console.print(f"    Qwen calls: {vision_status['qwen_calls_made']}")
-            console.print(f"    Total cost: €{vision_status['total_cost_eur']:.2f}")
+            claude_calls = vision_status.get('claude_calls_made', 0)
+            qwen_calls = vision_status.get('qwen_calls_made', 0)
+            if claude_calls > 0:
+                console.print(f"    Claude calls: {claude_calls}")
+            if qwen_calls > 0:
+                console.print(f"    Qwen calls: {qwen_calls}")
+            console.print(f"    Total cost: €{vision_status.get('total_cost_eur', 0.0):.2f}")
+
         except Exception as e:
             console.print(f"[yellow]  ⚠️  Could not get vision statistics: {e}[/yellow]")
     
@@ -368,6 +373,16 @@ def main():
         if match.missing_requirements:
             console.print(f"   ⚠️  Missing: {', '.join(match.missing_requirements)}")
 
+        # Show photo description if available
+        if args.verbose and result.get('photo_description'):
+            console.print(f"\n   📸 Vision Analysis:")
+            photo_desc = result['photo_description']
+            # Truncate if too long
+            if len(photo_desc) > 300:
+                photo_desc = photo_desc[:300] + "..."
+            console.print(f"   {photo_desc}")
+            console.print()
+
         # Verbose: Show vision description
         if args.verbose and used_vision:
             # Save images and get description
@@ -406,11 +421,12 @@ def main():
         vision_used = sum(1 for r in results if r['needs_vision'])
         console.print(f"\n  Vision analysis:")
         console.print(f"    Used on: {vision_used}/{len(results)} properties ({vision_used/len(results)*100:.0f}%)")
-        if vision_status['claude_calls_made'] > 0:
-            console.print(f"    Claude calls: {vision_status['claude_calls_made']}")
-        if vision_status['qwen_calls_made'] > 0:
-            console.print(f"    Qwen calls: {vision_status['qwen_calls_made']}")
-        console.print(f"    Total cost: €{vision_status['total_cost_eur']:.2f}")
+        if vision_status.get('claude_calls_made', 0) > 0:
+            console.print(f"    Claude calls: {vision_status.get('claude_calls_made', 0)}")
+        if vision_status.get('qwen_calls_made', 0) > 0:
+            console.print(f"    Qwen calls: {vision_status.get('qwen_calls_made', 0)}")
+        console.print(f"    Total cost: €{vision_status.get('total_cost_eur', 0.0):.2f}")
+    
    
     # Features detected across all properties
     all_features = {}

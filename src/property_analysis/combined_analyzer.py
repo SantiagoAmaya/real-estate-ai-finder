@@ -438,6 +438,7 @@ class CombinedPropertyAnalyzer:
                         result['text_match'] = enhanced_match
                         result['score'] = enhanced_match.final_score
                         result['needs_vision'] = True
+                        result['photo_description'] = photo_description
                     
                     # Re-sort after vision analysis
                     results.sort(key=lambda x: x['score'], reverse=True)

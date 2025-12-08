@@ -1,495 +1,316 @@
 """
-Hybrid Vision Analyzer: CLIP (free) + Claude Vision (selective)
+Vision Analyzer with conditional imports for Railway compatibility
 
-Architecture:
-  Stage 1: CLIP embeddings for ALL properties (M3 GPU, free)
-           → Quick image-text similarity scoring
-  
-  Stage 2: Claude Vision for TOP candidates only (budget-conscious)
-           → Dynamic feature extraction (like text analyzer)
+Supports:
+- Claude Vision API (always available)
+- Qwen2-VL local (optional, requires GPU + torch)
 
-Budget: €20 = ~300 Claude Vision calls (2 images each)
+For Railway: Only Claude modes work (qwen requires GPU)
 """
-import os
-import re
-from typing import List, Optional, Literal, Tuple
+from typing import List, Optional, Dict, Tuple
 from pathlib import Path
-import numpy as np
-from anthropic import Anthropic
-from dotenv import load_dotenv
-import json
-import mlflow
-from PIL import Image
+import base64
 import requests
 from io import BytesIO
+from PIL import Image
+from anthropic import Anthropic
+import os
 
-load_dotenv()
-
-from .schemas import DetectedFeature, QueryRequirement
-from .local_vision_qwen import Qwen2VisionAnalyzer
-
-class VisionAnalysis:
-    """Results from vision analysis"""
-    def __init__(
-        self,
-        property_id: str,
-        detected_features: List[DetectedFeature] = None,
-        image_embeddings: List[np.ndarray] = None,
-        analyzed_images: List[str] = None,
-        total_cost: float = 0.0
-    ):
-        self.property_id = property_id
-        self.detected_features = detected_features or []
-        self.image_embeddings = image_embeddings or []
-        self.analyzed_images = analyzed_images or []
-        self.total_cost = total_cost
-    
-    def get_avg_embedding(self) -> Optional[np.ndarray]:
-        """Average embedding across all images"""
-        if not self.image_embeddings:
-            return None
-        return np.mean(self.image_embeddings, axis=0)
-    
-    def get_feature(self, name: str) -> Optional[DetectedFeature]:
-        """Get feature by name"""
-        for f in self.detected_features:
-            if f.name.lower() == name.lower():
-                return f
-        return None
+from .schemas import VisionAnalysis, DetectedFeature
 
 
 class VisionAnalyzer:
     """
-    Hybrid vision analyzer optimized for M3 + budget
+    Multi-backend vision analyzer with Railway compatibility
     
-    Backends:
-    - 'clip': Local CLIP on M3 (always used, free)
-    - 'claude_vision': Claude API for feature extraction (selective use)
+    Modes:
+    - claude_only: Claude Vision API only ✅ Railway
+    - claude_primary: Claude with Qwen fallback ✅ Railway (if no GPU, stays Claude)
+    - qwen_only: Local Qwen only ❌ Railway (requires GPU)
+    - qwen_primary: Qwen with Claude fallback ❌ Railway (requires GPU)
     """
     
     def __init__(
         self,
-        claude_model: str = "claude-sonnet-4-20250514",
-        mode: str = "claude_primary",  # claude_primary, qwen_primary, claude_only, qwen_only
-        qwen_confidence_threshold: float = 0.7,  # Si Qwen confidence < threshold, usar Claude
-        default_mode: str = "claude_description",  # "claude_description", "claude_features", "clip"
-        cache_dir: Optional[str] = None,
-        api_key: Optional[str] = None,
-        max_claude_calls: int = 300  # Budget control
+        mode: str = "claude_primary",
+        qwen_confidence_threshold: float = 0.7,
+        max_claude_calls: int = 100,
+        cache_dir: Optional[str] = None
     ):
-        
-        self.claude_model = claude_model
         self.mode = mode
         self.qwen_confidence_threshold = qwen_confidence_threshold
-        self.default_mode = default_mode
-        
-        # API key for Claude
-        api_key = api_key or os.getenv("ANTHROPIC_API_KEY")
-        if not api_key:
-            raise ValueError("ANTHROPIC_API_KEY not found")
-        self.claude_client = Anthropic(api_key=api_key)
-        
-        # Cache
+        self.max_claude_calls = max_claude_calls
         self.cache_dir = Path(cache_dir or "data/cache/vision")
         self.cache_dir.mkdir(parents=True, exist_ok=True)
         
+        # Initialize Claude
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+        if not api_key:
+            raise ValueError("ANTHROPIC_API_KEY not found")
+        
+        self.claude_client = Anthropic(api_key=api_key)
+        self.claude_model = "claude-sonnet-4-20250514"
+        
         # Budget tracking
-        self.max_claude_calls = max_claude_calls
         self.claude_calls_made = 0
-        self.qwen_calls_made = 0
         self.total_cost = 0.0
         
-        # Lazy load models
-        self._clip_model = None
-        self._clip_preprocess = None
+        # Try to load Qwen (optional)
         self._qwen_analyzer = None
+        self._qwen_available = False
         
-        print(f"✅ VisionAnalyzer ready (mode: {mode}, Claude budget: {max_claude_calls} calls)")
-   
-    @property
-    def qwen_analyzer(self):
-        """Lazy load Qwen2-VL"""
-        if self._qwen_analyzer is None and self.mode in ['qwen_primary', 'qwen_only', 'claude_primary']:
+        if mode in ["qwen_only", "qwen_primary"]:
+            self._try_load_qwen()
+        
+        print(f"✅ VisionAnalyzer initialized")
+        print(f"   Mode: {self.mode}")
+        print(f"   Qwen available: {self._qwen_available}")
+    
+    def _try_load_qwen(self):
+        """Try to load Qwen (optional, graceful failure)"""
+        try:
+            # Try importing Qwen
+            from .local_vision_qwen import Qwen2VisionAnalyzer
+            
             self._qwen_analyzer = Qwen2VisionAnalyzer(
                 cache_dir=str(self.cache_dir / "qwen")
             )
-        return self._qwen_analyzer
-
-    def generate_photo_description(self,image_urls: List[str],max_images: int = 3,target_features: Optional[List[str]] = None,force_mode: Optional[str] = None, user_query: Optional[str] = None) -> str:
-        """
-            Hybrid: genera descripción usando Claude o Qwen2 según modo
+            self._qwen_available = True
+            print("✅ Qwen2-VL loaded successfully")
             
-            Esto permite usar el mismo text_analyzer para features de texto + fotos
+        except ImportError as e:
+            print(f"⚠️  Qwen not available: {e}")
+            print(f"⚠️  This is expected on Railway (no GPU)")
             
-            Args:
-                image_urls: URLs de imágenes
-                max_images: Límite de imágenes a analizar
-                user_query: Query del usuario para contextualizar (opcional)
-                force_mode: Forzar modo específico (override)
-            
-            Returns:
-            str: Descripción en texto como si fuera parte del anuncio
-        """
-        mode = force_mode or self.mode
-        # Select key images
-        selected = self.select_key_images(
-            image_urls,
-            max_images
-        )
-
-        selected_urls = [url for url, _ in selected]
-        
-        # === MODE: qwen_only ===
-        if mode == 'qwen_only':
-            description, confidence = self.qwen_analyzer.generate_description(
-                image_urls=selected_urls,
-                max_images=max_images,
-                user_query=user_query
-            )
-            self.qwen_calls_made += len(selected_urls)
-            return description
-        
-        # === MODE: claude_only ===
-        if mode == 'claude_only':
-            return self._generate_description_claude(selected, user_query)
-        
-        # === MODE: qwen_primary ===
-        if mode == 'qwen_primary':
-            # Try Qwen first
-            description, confidence = self.qwen_analyzer.generate_description(
-                image_urls=selected_urls,
-                max_images=max_images,
-                user_query=user_query   
-            )
-            self.qwen_calls_made += len(selected_urls)
-            
-            # If confidence low, fallback to Claude
-            if confidence < self.qwen_confidence_threshold:
-                print(f"  ⚠️  Qwen confidence {confidence:.2f} < {self.qwen_confidence_threshold}, using Claude fallback")
-                return self._generate_description_claude(selected, user_query)
-            
-            return description
-        
-        # === MODE: claude_primary (default) ===
-        if mode == 'claude_primary':
-            # Use Claude by default
-            # But if budget exhausted, use Qwen
-            if self.claude_calls_made >= self.max_claude_calls:
-                print(f"  ⚠️  Claude budget exhausted, using Qwen2 fallback")
-                description, _ = self.qwen_analyzer.generate_description(
-                    image_urls=selected_urls,
-                    max_images=max_images,
-                    user_query=user_query
+            # If qwen_only was explicitly requested, error
+            if self.mode == "qwen_only":
+                raise RuntimeError(
+                    "qwen_only mode requested but Qwen not available. "
+                    "For Railway, use 'claude_only' or 'claude_primary'."
                 )
-                self.qwen_calls_made += len(selected_urls)
-                return description
             
-            return self._generate_description_claude(selected, user_query)
+            # Otherwise, auto-fallback to Claude
+            if self.mode == "qwen_primary":
+                print(f"⚠️  Falling back to claude_primary mode")
+                self.mode = "claude_primary"
+            
+            self._qwen_available = False
         
-        # Fallback
-        return self._generate_description_claude(selected, user_query)
+        except Exception as e:
+            print(f"⚠️  Error loading Qwen: {e}")
+            self._qwen_available = False
     
-    def _generate_description_claude(
+    def generate_photo_description(
         self,
-        selected: List[Tuple[str, str]],
-        user_query: Optional[str] = None
+        image_urls: List[str],
+        max_images: int = 3,
+        user_query: str = ""
     ) -> str:
-        
-        """Claude Vision genera descripción OBJETIVA basada en query del usuario
-        El text_analyzer después extraerá features dinámicamente
         """
-       
-        # Build prompt
-        query_context = ""
-        if user_query:
-            query_context = f"""
-
-            CONTEXTO - El usuario busca:
-            "{user_query}"
-
-            Describe lo que ves en la imagen que sea RELEVANTE para este tipo de búsqueda.
-            Si el usuario busca "techos altos", menciona la altura de los techos.
-            Si busca "entrada independiente", describe el tipo de acceso.
-            Si busca "espacio diáfano", describe la distribución."""
+        Generate consolidated description from property photos
         
-        prompt = f"""Eres un agente inmobiliario profesional describiendo esta propiedad.
-
-                    Analiza esta foto de forma OBJETIVA y FACTUAL, sin embellecer ni usar lenguaje de venta.
-
-                    Describe SOLO lo que ves:
-                    1. Tipo de propiedad (local comercial, piso, oficina, etc)
-                    2. Acceso/entrada (¿entrada independiente desde calle? ¿portal compartido?)
-                    3. Luz natural (número de ventanas visibles, tamaño aproximado)
-                    4. Estado (reformado, a reformar, nuevo)
-                    5. Distribución (diáfano, habitaciones, espacios)
-                    6. Características visuales (terraza, balcón, vistas, etc)
-                    7. Techos (altura aproximada: estándar 2.5m, altos 3.5m+, muy altos 4m+)
-                    8. Suelos (tipo: cerámica, parquet, hormigón, baldosa)
-                    {query_context}
-
-                    Responde en español con descripción FACTUAL en párrafos breves. Si no sabes algo mejor no inventes.
-                    NO uses adjetivos comerciales tipo "magnífico", "espectacular", "acogedor".
-                    Máximo 150 palabras por imagen."""
+        Routes to Claude or Qwen based on mode and availability
+        """
+        if not image_urls:
+            return ""
         
-        descriptions = []
-        images_analyzed = 0
+        image_urls = image_urls[:max_images]
         
-        for idx, (url, purpose) in enumerate(selected):
-            # Check budget
-            if self.claude_calls_made >= self.max_claude_calls:
-                print(f"⚠️  Budget exhausted, skipping remaining images")
-                break
+        # Route based on mode
+        if self.mode == "qwen_only":
+            if not self._qwen_available:
+                raise RuntimeError("qwen_only mode but Qwen not available")
+            return self._analyze_with_qwen(image_urls, user_query)
+        
+        elif self.mode == "claude_only":
+            return self._analyze_with_claude(image_urls, user_query)
+        
+        elif self.mode == "claude_primary":
+            # Claude first (always available)
+            return self._analyze_with_claude(image_urls, user_query)
+        
+        elif self.mode == "qwen_primary":
+            # Try Qwen first if available
+            if self._qwen_available:
+                try:
+                    return self._analyze_with_qwen(image_urls, user_query)
+                except Exception as e:
+                    print(f"⚠️  Qwen failed: {e}, falling back to Claude")
             
+            # Fallback to Claude
+            return self._analyze_with_claude(image_urls, user_query)
+        
+        else:
+            raise ValueError(f"Unknown mode: {self.mode}")
+    
+    def _analyze_with_claude(
+        self,
+        image_urls: List[str],
+        user_query: str
+    ) -> str:
+        """Analyze with Claude Vision API"""
+        
+        # Check budget
+        if self.claude_calls_made >= self.max_claude_calls:
+            print(f"⚠️  Claude budget exhausted")
+            return ""
+        
+        individual_descriptions = []
+        
+        for idx, url in enumerate(image_urls, 1):
             try:
                 # Download image
-                image = self.download_image(url)
+                image = self._download_image(url)
                 if image is None:
                     continue
                 
                 # Convert to base64
-                import base64
-                from io import BytesIO
+                image_base64 = self._image_to_base64(image)
                 
-                buffered = BytesIO()
-                image.save(buffered, format="JPEG", quality=85)
-                img_base64 = base64.b64encode(buffered.getvalue()).decode()
+                # Query-aware prompt
+                prompt = self._get_vision_prompt(user_query)
                 
-                # Call Claude with retry
-                max_retries = 2
-                description = None
+                # Call Claude
+                response = self.claude_client.messages.create(
+                    model=self.claude_model,
+                    max_tokens=400,
+                    messages=[{
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": "image/jpeg",
+                                    "data": image_base64
+                                }
+                            },
+                            {
+                                "type": "text",
+                                "text": prompt
+                            }
+                        ]
+                    }]
+                )
                 
-                for attempt in range(max_retries):
-                    try:
-                        response = self.claude_client.messages.create(
-                            model=self.claude_model,
-                            max_tokens=400,
-                            messages=[{
-                                "role": "user",
-                                "content": [
-                                    {
-                                        "type": "image",
-                                        "source": {
-                                            "type": "base64",
-                                            "media_type": "image/jpeg",
-                                            "data": img_base64
-                                        }
-                                    },
-                                    {
-                                        "type": "text",
-                                        "text": prompt
-                                    }
-                                ]
-                            }]
-                        )
-                        
-                        description = response.content[0].text.strip()
-                        break  # Success
-                    
-                    except Exception as e:
-                        if attempt < max_retries - 1:
-                            print(f"  ⚠️  Retry {attempt+1}/{max_retries} for image {idx+1}")
-                            continue
-                        else:
-                            raise
+                description = response.content[0].text.strip()
+                individual_descriptions.append(description)
                 
-                if description:
-                    descriptions.append(description)  # Sin prefijo, para consolidar
-                    images_analyzed += 1
-                
-                ###### Update budget
+                # Update budget
                 self.claude_calls_made += 1
                 self.total_cost += 0.025
                 
+                print(f"  ✅ Image {idx}/{len(image_urls)} (Claude)")
+                
             except Exception as e:
-                print(f"⚠️  Error processing {url}: {e}")
+                print(f"  ⚠️  Error image {idx}: {e}")
                 continue
         
-        if images_analyzed > 0:
-           print(f"    ✅ Analyzed {images_analyzed} images")
-
-        # Consolidate multiple descriptions into one
-        if len(descriptions) > 1 and user_query:
-            print(f"    🔄 Consolidating {len(descriptions)} descriptions...")
-            consolidated = self._consolidate_descriptions(descriptions, user_query)
-            return f"[Análisis de {images_analyzed} imágenes]: {consolidated}"
-        elif descriptions:
-            return f"[Análisis de imagen]: {descriptions[0]}"
-        else:
-            return ""
-
-    
-    @property
-    def clip_model(self):
-        """Lazy load CLIP model (optimized for M3)"""
-        if self._clip_model is None:
-            print(f"Loading CLIP model: {self.clip_model_name} on M3...")
-            import torch
-            import clip
-            
-            # M3 optimization: use MPS (Metal Performance Shaders)
-            device = "mps" if torch.backends.mps.is_available() else "cpu"
-            print(f"Using device: {device}")
-            
-            self._clip_model, self._clip_preprocess = clip.load(
-                self.clip_model_name, 
-                device=device
-            )
-            print("✅ CLIP loaded on M3")
-        
-        return self._clip_model, self._clip_preprocess
-    
-    def _consolidate_descriptions(
-        self,
-        individual_descriptions: List[str],
-        user_query: str
-        ) -> str:
-        """
-        Consolida múltiples descripciones de imágenes en una síntesis concisa
-        ACTUALIZADO: Más robusto contra respuestas inesperadas de Claude
-        """
         if not individual_descriptions:
             return ""
         
         if len(individual_descriptions) == 1:
             return individual_descriptions[0]
         
-        # Combine all descriptions
-        combined = "\n\n".join([
-            f"Imagen {i+1}: {desc}" 
-            for i, desc in enumerate(individual_descriptions)
-        ])
-        
-        # Consolidation prompt - MUY EXPLÍCITO sobre formato
-        consolidation_prompt = f"""Tienes {len(individual_descriptions)} descripciones de imágenes de la misma propiedad.
-
-    DESCRIPCIONES INDIVIDUALES:
-    {combined}
-
-    QUERY DEL USUARIO:
-    "{user_query}"
-
-    TAREA:
-    Sintetiza estas descripciones en UN SOLO PÁRRAFO CONCISO (máximo 120 palabras) que:
-    1. Elimine información redundante entre imágenes
-    2. Priorice información RELEVANTE para el query del usuario
-    3. Sea FACTUAL sin opiniones
-    4. Incluya: tipo de espacio, acceso, techos, suelos, luz, distribución, estado
-
-    FORMATO DE RESPUESTA:
-    - Responde SOLO con el párrafo consolidado en español
-    - NO uses formato JSON
-    - NO uses comillas extras
-    - NO uses markdown
-    - SOLO texto plano descriptivo"""
-        
-        max_retries = 2
-        
-        for attempt in range(max_retries):
-            try:
-                response = self.claude_client.messages.create(
-                    model=self.claude_model,
-                    max_tokens=300,
-                    messages=[{
-                        "role": "user",
-                        "content": consolidation_prompt
-                    }]
-                )
-                
-                consolidated = response.content[0].text.strip()
-                
-                # Limpieza adicional por si Claude ignora instrucciones
-                # Remover markdown fences si existen
-                if consolidated.startswith("```"):
-                    consolidated = consolidated.split("```")[1]
-                    if consolidated.startswith("json") or consolidated.startswith("text"):
-                        consolidated = consolidated[4:]
-                    consolidated = consolidated.strip()
-                
-                # Remover comillas externas si existen
-                if consolidated.startswith('"') and consolidated.endswith('"'):
-                    consolidated = consolidated[1:-1]
-                
-                # Update budget (1 extra call for consolidation)
-                self.claude_calls_made += 1
-                self.total_cost += 0.003  # Cheaper - no images
-                
-                return consolidated
-                
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    print(f"⚠️  Consolidation error (attempt {attempt+1}/{max_retries}), retrying...")
-                    continue
-                else:
-                    print(f"⚠️  Consolidation error: {e}")
-                    # Fallback: just join with newlines
-                    return "\n\n".join(individual_descriptions[:2])  # First 2 only
-        
-        # Final fallback
-        return "\n\n".join(individual_descriptions[:2])
-
+        # Consolidate multiple descriptions
+        return self._consolidate_descriptions(individual_descriptions, user_query)
     
-    def select_key_images(
+    def _analyze_with_qwen(
         self,
         image_urls: List[str],
-        target_features: Optional[List[str]] = None,
-        max_images: int = 5
-    ) -> List[Tuple[str, str]]:
-        """
-        Smart image selection based on query needs
+        user_query: str
+    ) -> str:
+        """Analyze with Qwen (local GPU)"""
+        if not self._qwen_available:
+            raise RuntimeError("Qwen not available")
         
-        Returns: List[(url, purpose)]
+        prompt = self._get_vision_prompt(user_query)
+        description, confidence = self._qwen_analyzer.generate_description(
+            image_urls=image_urls,
+            prompt_template=prompt,
+            max_images=len(image_urls)
+        )
         
-        Heuristics:
-        - First 2 images: Usually exterior/facade (entrada_independiente)
-        - Middle images: Interior views (luz_natural, layout)
-        - Images with keywords in URL/filename
-        - Max N images to control cost
-        """
-        if target_features is None:
-           target_features = []
-        selected = []
-        
-        # Priority 1: First 2 (exterior likely)
-        if len(image_urls) >= 2:
-            selected.append((image_urls[0], "exterior_main"))
-            selected.append((image_urls[1], "exterior_secondary"))
-        elif len(image_urls) >= 1:
-            selected.append((image_urls[0], "main_view"))
-        
-        # Priority 2: Keyword-based selection
-        keywords = {
-            "entrada": "entrance",
-            "fachada": "facade",
-            "salon": "living_room",
-            "interior": "interior",
-            "terraza": "terrace",
-            "cocina": "kitchen"
-        }
-        
-        for url in image_urls[2:]:
-            if len(selected) >= max_images:
-                break
-            
-            url_lower = url.lower()
-            for keyword, purpose in keywords.items():
-                if keyword in url_lower:
-                    selected.append((url, purpose))
-                    break
-        
-        # Fill remaining slots with evenly distributed images
-        remaining = max_images - len(selected)
-        if remaining > 0 and len(image_urls) > len(selected):
-            available = [u for u in image_urls if not any(u == s[0] for s in selected)]
-            step = max(1, len(available) // remaining)
-            for i in range(0, len(available), step):
-                if len(selected) >= max_images:
-                    break
-                selected.append((available[i], f"view_{len(selected)}"))
-        
-        return selected[:max_images]
+        return description
     
-    def download_image(self, url: str) -> Optional[Image.Image]:
-        """Download and open image"""
+    def _get_vision_prompt(self, user_query: str) -> str:
+        """Get query-aware vision prompt"""
+        base_prompt = """Analiza esta foto de forma OBJETIVA y FACTUAL, sin embellecer.
+
+Describe SOLO lo que ves:
+1. Tipo de espacio: Local comercial, piso, oficina
+2. Acceso: Entrada desde calle (independiente) o portal compartido
+3. Techos: Altura en metros (2.5m estándar, 3.0m medio-alto, 3.5m+ alto)
+4. Suelos: Material exacto (cerámica, parquet, hormigón)
+5. Luz natural: Número de ventanas/puertas visibles
+6. Distribución: Diáfano, compartimentado
+7. Estado: Nuevo/reformado/antiguo
+
+NO uses adjetivos comerciales. Máximo 150 palabras."""
+        
+        if user_query:
+            base_prompt += f"\n\nCONTEXTO: El usuario busca '{user_query}'. Prioriza información relevante."
+        
+        return base_prompt
+    
+    def _consolidate_descriptions(
+        self,
+        individual_descriptions: List[str],
+        user_query: str
+    ) -> str:
+        """Consolidate multiple descriptions"""
+        # Don't label images, just list them
+        combined = "\n---\n".join(individual_descriptions)
+        
+        prompt = f"""Tienes {len(individual_descriptions)} descripciones de IMÁGENES DE LA MISMA PROPIEDAD.
+
+DESCRIPCIONES (de diferentes ángulos/espacios de la misma propiedad):
+{combined}
+
+BÚSQUEDA DEL USUARIO: "{user_query}"
+
+TAREA: Sintetiza en UN SOLO PÁRRAFO FLUIDO (máximo 150 palabras) que:
+- Unifique la información de todos los espacios mostrados
+- Elimine redundancias (no repitas "techos 2.5m" 3 veces)
+- Priorice lo relevante para la búsqueda
+- Sea factual y objetivo
+- Incluya: tipo, acceso, techos, suelos, luz, distribución, estado
+
+IMPORTANTE: 
+- NO uses "Imagen 1", "Imagen 2" en tu respuesta
+- Escribe un párrafo corrido y natural
+
+Responde SOLO con el párrafo en español."""
+        
+        try:
+            response = self.claude_client.messages.create(
+                model=self.claude_model,
+                max_tokens=300,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            
+            consolidated = response.content[0].text.strip()
+            
+            # Clean up markdown
+            if consolidated.startswith("```"):
+                consolidated = consolidated.split("```")[1].strip()
+                if consolidated.startswith("json") or consolidated.startswith("text"):
+                    consolidated = consolidated[4:].strip()
+            
+            if consolidated.startswith('"') and consolidated.endswith('"'):
+                consolidated = consolidated[1:-1]
+            
+            self.claude_calls_made += 1
+            self.total_cost += 0.003
+            
+            return consolidated
+            
+        except Exception as e:
+            print(f"⚠️  Consolidation error: {e}")
+            return "\n\n".join(individual_descriptions[:2])
+    
+    def _download_image(self, url: str) -> Optional[Image.Image]:
+        """Download image from URL"""
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
@@ -498,230 +319,46 @@ class VisionAnalyzer:
             print(f"⚠️  Failed to download {url}: {e}")
             return None
     
-    def generate_clip_embedding(
-        self,
-        image_url: str,
-        property_id: str,
-        image_idx: int = 0
-    ) -> Optional[np.ndarray]:
-        """
-        Generate CLIP embedding for image (cached)
-        FREE - runs on M3
-        """
-        cache_file = self.cache_dir / f"{property_id}_img{image_idx}_clip.npy"
-        if cache_file.exists():
-            return np.load(cache_file)
-        
-        try:
-            # Load model
-            model, preprocess = self.clip_model
-            import torch
-            
-            # Download and preprocess image
-            image = self.download_image(image_url)
-            if image is None:
-                return None
-            
-            image_input = preprocess(image).unsqueeze(0)
-            
-            # Move to M3
-            device = next(model.parameters()).device
-            image_input = image_input.to(device)
-            
-            # Generate embedding
-            with torch.no_grad():
-                embedding = model.encode_image(image_input)
-                embedding = embedding.cpu().numpy().flatten()
-            
-            # Normalize
-            embedding = embedding / np.linalg.norm(embedding)
-            
-            # Cache
-            np.save(cache_file, embedding)
-            return embedding
-            
-        except Exception as e:
-            print(f"⚠️  CLIP embedding error for {image_url}: {e}")
-            return None
-    
-    def compute_image_text_similarity(
-        self,
-        image_embedding: np.ndarray,
-        text: str
-    ) -> float:
-        """
-        Compute similarity between image embedding and text
-        Uses CLIP's text encoder
-        """
-        try:
-            model, _ = self.clip_model
-            import torch
-            import clip
-            
-            # Encode text
-            device = next(model.parameters()).device
-            text_tokens = clip.tokenize([text]).to(device)
-            
-            with torch.no_grad():
-                text_embedding = model.encode_text(text_tokens)
-                text_embedding = text_embedding.cpu().numpy().flatten()
-            
-            # Normalize
-            text_embedding = text_embedding / np.linalg.norm(text_embedding)
-            
-            # Cosine similarity
-            similarity = float(np.dot(image_embedding, text_embedding))
-            return max(0.0, min(1.0, similarity))
-            
-        except Exception as e:
-            print(f"⚠️  Similarity computation error: {e}")
-            return 0.0
-    
-    def extract_features_with_claude(
-        self,
-        image_url: str,
-        query_text: str,
-        user_query: Optional[str] = None
-    ) -> List[DetectedFeature]:
-        """
-        Dynamic feature extraction using Claude Vision
-        COSTS MONEY - use strategically!
-        
-        Returns: List[DetectedFeature] with same schema as text analyzer
-        """
-        # Budget check
-        if self.claude_calls_made >= self.max_claude_calls:
-            print(f"⚠️  Budget exhausted ({self.max_claude_calls} calls)")
-            return []
-        
-        try:
-            # Download image and convert to base64
-            image = self.download_image(image_url)
-            if image is None:
-                return []
-            
-            import base64
-            from io import BytesIO
-            
-            buffered = BytesIO()
-            image.save(buffered, format="JPEG", quality=85)
-            img_base64 = base64.b64encode(buffered.getvalue()).decode()
-            
-            # Construct prompt for dynamic feature extraction
-            target_features_str = ", ".join(target_features) if target_features else "cualquier característica relevante"
-            
-            prompt = f"""Analiza esta imagen de una propiedad inmobiliaria.
-
-Query del usuario: "{query_text}"
-
-Detecta características visuales relevantes para este query. Busca especialmente: {target_features_str}
-
-Ejemplos de características a detectar:
-- entrada_independiente: puerta directa desde la calle
-- luz_natural: ventanas, ventanales, claridad
-- terraza_privada: espacio exterior privado
-- espacio_diafano: espacio abierto sin divisiones
-- estado_reforma: necesita renovación o está reformado
-- cualquier otra característica visual relevante
-
-Responde SOLO con JSON válido (sin markdown):
-{{
-  "detected_features": [
-    {{
-      "name": "nombre_en_snake_case",
-      "value": "descripción breve o medida si aplica",
-      "confidence": 0.0-1.0,
-      "evidence": "qué ves en la imagen que justifica esto"
-    }}
-  ]
-}}
-
-Si no detectas ninguna característica relevante, devuelve lista vacía."""
-
-            # Call Claude Vision API
-            response = self.claude_client.messages.create(
-                model=self.claude_model,
-                max_tokens=1500,
-                messages=[{
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": "image/jpeg",
-                                "data": img_base64
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": prompt
-                        }
-                    ]
-                }]
-            )
-            
-            # Parse response
-            response_text = response.content[0].text.strip()
-            
-            # Clean markdown if present
-            if response_text.startswith("```"):
-                response_text = response_text.split("```")[1]
-                if response_text.startswith("json"):
-                    response_text = response_text[4:]
-            response_text = response_text.strip()
-            
-            result = json.loads(response_text)
-            features = [
-                DetectedFeature(
-                    **f,
-                    source="image_claude"
-                )
-                for f in result.get("detected_features", [])
-            ]
-            
-            # Update budget tracking
-            self.claude_calls_made += 1
-            self.total_cost += 0.025  # Approximate cost per image
-            
-            return features
-            
-        except Exception as e:
-            print(f"⚠️  Claude Vision error: {e}")
-            return []
+    def _image_to_base64(self, image: Image.Image) -> str:
+        """Convert PIL Image to base64"""
+        buffered = BytesIO()
+        image.save(buffered, format="JPEG", quality=85)
+        return base64.b64encode(buffered.getvalue()).decode()
     
     def analyze_property_stage1(
         self,
         property_id: str,
         image_urls: List[str],
-        max_images: int = 5
+        max_images: int = 3
     ) -> VisionAnalysis:
         """
-        Stage 1: Fast CLIP embeddings for ALL properties
-        FREE - runs on M3
+        Stage 1: CLIP embeddings only (if Qwen available)
         
-        Returns: VisionAnalysis with embeddings only
+        Returns empty VisionAnalysis if Qwen not available
         """
-        print(f"  Stage 1 (CLIP): {property_id}")
+        if not self._qwen_available:
+            # Return empty analysis
+            return VisionAnalysis(
+                property_id=property_id,
+                image_embeddings={},
+                avg_embedding=None,
+                detected_features=[],
+                confidence_score=0.0
+            )
         
-        # Select key images
-        selected = self.select_key_images(image_urls, [], max_images)
-        
-        # Generate embeddings
-        embeddings = []
-        analyzed = []
-        
-        for idx, (url, purpose) in enumerate(selected):
-            embedding = self.generate_clip_embedding(url, property_id, idx)
+        # Use Qwen CLIP
+        embeddings = {}
+        for i, url in enumerate(image_urls[:max_images]):
+            embedding = self._qwen_analyzer.generate_clip_embedding(url)
             if embedding is not None:
-                embeddings.append(embedding)
-                analyzed.append(url)
+                embeddings[f"image_{i}"] = embedding
         
         return VisionAnalysis(
             property_id=property_id,
             image_embeddings=embeddings,
-            analyzed_images=analyzed,
-            total_cost=0.0
+            avg_embedding=None,  # Computed on demand
+            detected_features=[],
+            confidence_score=1.0
         )
     
     def analyze_property_stage2(
@@ -729,50 +366,60 @@ Si no detectas ninguna característica relevante, devuelve lista vacía."""
         property_id: str,
         image_urls: List[str],
         query_text: str,
-        target_features: Optional[List[str]] = None,
+        target_features: List[str],
         max_images: int = 2
     ) -> VisionAnalysis:
         """
-        Stage 2: Detailed Claude Vision analysis for TOP candidates
-        COSTS MONEY - use only on filtered properties!
-        
-        Args:
-            max_images: Limit to control cost (2 images = €0.05)
+        Stage 2: Claude Vision for detailed features
+        COSTS MONEY
         """
-        print(f"  Stage 2 (Claude): {property_id}")
+        # Generate description
+        description = self.generate_photo_description(
+            image_urls=image_urls,
+            max_images=max_images,
+            user_query=query_text
+        )
         
-        # Select key images (fewer for cost)
-        selected = self.select_key_images(image_urls, target_features, max_images)
-        
-        all_features = []
-        analyzed = []
-        
-        for url, purpose in selected:
-            features = self.extract_features_with_claude(url, query_text, target_features)
-            all_features.extend(features)
-            analyzed.append(url)
-        
-        # Deduplicate features (keep highest confidence)
-        unique_features = {}
-        for f in all_features:
-            if f.name not in unique_features or f.confidence > unique_features[f.name].confidence:
-                unique_features[f.name] = f
-        
+        # Dummy detected features (text_analyzer will extract from description)
         return VisionAnalysis(
             property_id=property_id,
-            detected_features=list(unique_features.values()),
-            analyzed_images=analyzed,
-            total_cost=len(selected) * 0.025
+            image_embeddings={},
+            avg_embedding=None,
+            detected_features=[],  # Extracted by text_analyzer from description
+            confidence_score=0.9
         )
     
-    def get_budget_status(self) -> dict:
-        """Check remaining budget"""
+    def compute_image_text_similarity(
+        self,
+        image_embedding,
+        query_text: str
+    ) -> float:
+        """Compute similarity (requires Qwen CLIP)"""
+        if not self._qwen_available:
+            return 0.0
+        
+        # Use Qwen CLIP
+        text_embedding = self._qwen_analyzer.generate_text_embedding(query_text)
+        
+        import numpy as np
+        similarity = np.dot(image_embedding, text_embedding) / (
+            np.linalg.norm(image_embedding) * np.linalg.norm(text_embedding)
+        )
+        return float(similarity)
+    
+    def get_budget_status(self) -> Dict:
+        """Get budget status"""
+        # Get qwen stats if available
+        qwen_calls = 0
+        if self._qwen_available and self._qwen_analyzer:
+            qwen_calls = getattr(self._qwen_analyzer, 'calls_made', 0)
+        
         return {
             'mode': self.mode,
-            "claude_calls_made": self.claude_calls_made,
-            "claude_max_calls": self.max_claude_calls,
-            "claude_remaining": self.max_claude_calls - self.claude_calls_made,
-            'qwen_calls_made': self.qwen_calls_made,
-            "total_cost_eur": self.total_cost,
-            "remaining_budget_eur": (self.max_claude_calls - self.claude_calls_made) * 0.025
+            'qwen_available': self._qwen_available,
+            'claude_calls_made': self.claude_calls_made,
+            'qwen_calls_made': qwen_calls,  # For backward compatibility
+            'max_claude_calls': self.max_claude_calls,
+            'remaining': self.max_claude_calls - self.claude_calls_made,
+            'total_cost_eur': self.total_cost
         }
