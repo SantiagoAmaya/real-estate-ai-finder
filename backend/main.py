@@ -19,7 +19,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from src.query_parser.parser import QueryParser
 from src.data.scraper import FotocasaScraper
 from src.property_analysis.combined_analyzer import CombinedPropertyAnalyzer
-from src.property_analysis.schemas import QueryRequirement
+from src.property_analysis.schemas import QueryRequirement, MatchResult
 
 # Initialize FastAPI
 app = FastAPI(
