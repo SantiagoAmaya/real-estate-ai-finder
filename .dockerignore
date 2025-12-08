@@ -20,9 +20,9 @@ htmlcov
 .vscode
 .idea
 
-# Datos Pesados (Esto soluciona tu primer error)
+# Datos Pesados
 data/
-# Si necesitas alguna subcarpeta de data, usa ! para incluirla, por ejemplo:
+# Si se necesitas alguna subcarpeta de data, usar ! para incluirla, por ejemplo:
 # !data/config
 
 # Archivos irrelevantes para producción (hacen el build lento)
