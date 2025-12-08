@@ -131,3 +131,6 @@ data/debug/
 data/experiments/
 data/cache/
 
+# Archivos especificos
+DEPLOYMENT_GUIDE.md
+

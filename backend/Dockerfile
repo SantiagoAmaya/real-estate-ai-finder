@@ -19,7 +19,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy source code
 COPY src/ ./src/
 COPY backend/ ./backend/
-COPY data/ ./data/
 
 # Create necessary directories
 RUN mkdir -p data/raw data/cache/embeddings data/cache/vision
