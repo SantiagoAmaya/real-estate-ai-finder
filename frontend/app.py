@@ -65,7 +65,7 @@ def search_properties(
                 "skip_scrape": skip_scrape,
                 "max_results": max_results
             },
-            timeout=300  # 5 minutes timeout
+            timeout=600  # 5 minutes timeout
         )
         
         if response.status_code == 200:
@@ -150,11 +150,11 @@ def main():
             # REMOVED: skip_scrape checkbox
             # We will force skip_scrape=False in the call below
             
-            max_results = st.slider(
+            ax_results = st.slider(
                 "Max Results to Show",
-                min_value=5,
-                max_value=20,
-                value=10,
+                min_value=3,   # Bajar mínimo
+                max_value=15,  # Bajar máximo
+                value=5,       # Poner por defecto 5 (Mucho más rápido)
                 help="Number of top properties to display"
             )
         
