@@ -377,7 +377,7 @@ async def search_properties(request: SearchRequest):
                 missing_features=match.missing_requirements,
                 had_vision_analysis=result.get('needs_vision', False),
                 photo_description=result.get('photo_description'),
-                match_explanation=self._generate_match_explanation(prop, match),
+                match_explanation=analyzer._generate_match_explanation(prop, match),
                 url=prop.get('url')
             ))
         

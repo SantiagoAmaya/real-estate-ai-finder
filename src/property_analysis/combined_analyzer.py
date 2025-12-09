@@ -539,6 +539,35 @@ class CombinedPropertyAnalyzer:
         
         return enhanced
     
+    def _generate_match_explanation(self, prop: Dict, match: MatchResult) -> str:
+        """
+        Generates a human-readable explanation of why the property matched.
+        Used for the frontend UI.
+        """
+        explanation_parts = []
+        
+        # 1. Score General
+        explanation_parts.append(f"Match Score: {match.final_score:.0%}")
+        
+        # 2. Features encontradas
+        if match.matched_features:
+            feature_names = [f.name for f in match.matched_features]
+            # Limitar a 3 features para no saturar
+            display_features = feature_names[:3]
+            remaining = len(feature_names) - 3
+            
+            text = f"✅ Found: {', '.join(display_features)}"
+            if remaining > 0:
+                text += f" +{remaining} more"
+            explanation_parts.append(text)
+            
+        # 3. Features faltantes (importante para el usuario)
+        if match.missing_requirements:
+            missing_text = f"❌ Missing: {', '.join(match.missing_requirements)}"
+            explanation_parts.append(missing_text)
+            
+        return " | ".join(explanation_parts)
+    
     def get_status(self) -> Dict:
         """Get analyzer status"""
         status = {
