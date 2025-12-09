@@ -296,8 +296,10 @@ async def search_properties(request: SearchRequest):
                 detail="No properties found. Try different filters."
             )
         
-        properties_to_analyze = properties[:min(20, len(properties))]
-        print(f"  📊 Analyzing {len(properties_to_analyze)} properties")
+        limit_analysis = request.max_results + 2
+        properties_to_analyze = properties[:min(limit_analysis, len(properties))]
+        
+        print(f"  📊 Analyzing {len(properties_to_analyze)} properties (Requested top {request.max_results})")
         
         # ============================================================
         # STEP 3: Analyze Properties (API-only)
