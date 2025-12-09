@@ -65,7 +65,7 @@ def search_properties(
                 "skip_scrape": skip_scrape,
                 "max_results": max_results
             },
-            timeout=600  # 5 minutes timeout
+            timeout=3600  # 5 minutes timeout
         )
         
         if response.status_code == 200:
@@ -259,7 +259,7 @@ def main():
                 "Max Results to Show",
                 min_value=3,   # Bajar mínimo
                 max_value=15,  # Bajar máximo
-                value=5,       # Poner por defecto 5 (Mucho más rápido)
+                value=3,       # Poner por defecto 5 (Mucho más rápido)
                 help="Number of top properties to display"
             )
         
