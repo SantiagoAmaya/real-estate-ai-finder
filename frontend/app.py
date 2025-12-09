@@ -1,7 +1,6 @@
 """
 Streamlit Frontend for Real Estate AI Finder
-
-User-friendly interface for property search with AI
+Modified: API Only Version (No Cache, No Local)
 """
 import streamlit as st
 import requests
@@ -76,7 +75,7 @@ def search_properties(
             return None, f"Error {response.status_code}: {error_detail}"
             
     except requests.exceptions.Timeout:
-        return None, "Request timed out (>5 minutes). Try with --skip-scrape or fewer properties."
+        return None, "Request timed out (>5 minutes). Try with fewer properties."
     except requests.exceptions.ConnectionError:
         return None, f"Cannot connect to backend at {BACKEND_URL}. Is it running?"
     except Exception as e:
@@ -128,33 +127,28 @@ def main():
         
         st.markdown("---")
         
-        # Advanced Settings
-        with st.expander("🔧 Advanced Settings", expanded=False):
-            backend = st.selectbox(
-                "Text Analysis Backend",
-                options=["api", "local"],
-                index=0,
-                help="API: Fast, uses Claude. Local: Free, requires GPU"
-            )
+        # Settings Simplified
+        with st.expander("🔧 Settings", expanded=True):
             
+            # Backend hardcoded to API (Local removed)
+            backend = "api" 
+            
+            # Vision Mode filtered (Removed claude_primary and qwen_only)
             vision_mode = st.selectbox(
                 "Vision Analysis Mode",
-                options=["claude_primary", "qwen_only", "claude_only", "None"],
+                options=["claude_only", "None"],
                 index=0,
-                help="claude_primary: Best quality. qwen_only: Free (requires GPU). None: Text-only"
+                help="claude_only: Full AI analysis using Claude Vision. None: Text-only analysis (cheaper)."
             )
             
             use_vision_agent = st.checkbox(
                 "Use Vision Decision Agent",
                 value=True,
-                help="LLM decides intelligently when to analyze images"
+                help="LLM decides intelligently when to analyze images to save costs"
             )
             
-            skip_scrape = st.checkbox(
-                "Use Cached Data (Faster)",
-                value=True,
-                help="Use existing data instead of scraping (faster testing)"
-            )
+            # REMOVED: skip_scrape checkbox
+            # We will force skip_scrape=False in the call below
             
             max_results = st.slider(
                 "Max Results to Show",
@@ -164,18 +158,15 @@ def main():
                 help="Number of top properties to display"
             )
         
-        # Cost estimate
+        # Cost estimate logic updated
         st.markdown("---")
         st.markdown("### 💰 Cost Estimate")
         
         if vision_mode == "None":
-            cost_estimate = 0.003 if backend == "api" else 0.0
-        elif vision_mode == "qwen_only":
-            cost_estimate = 0.003 if backend == "api" else 0.0
-        elif vision_mode == "claude_only":
-            cost_estimate = 0.078 if backend == "api" else 0.075
-        else:  # claude_primary
-            cost_estimate = 0.028 if backend == "api" else 0.025
+            cost_estimate = 0.003  # Text only cost approx
+        else:
+            # Claude Only cost approx
+            cost_estimate = 0.078
         
         st.metric(
             "Per Property",
@@ -183,23 +174,20 @@ def main():
             help="Approximate cost per property analyzed"
         )
         
-        # Help
+        # Help updated
         st.markdown("---")
         st.markdown("### ℹ️ Help")
         st.markdown("""
         **Example queries:**
         - Local entrada independiente Barcelona
         - Piso 3 habitaciones luminoso máx 300k
-        - Local comercial reformado cerca metro
         
-        **Backends:**
-        - **API**: Fast, accurate (€0.003/property)
-        - **Local**: Free, slower (requires GPU)
+        **Mode:**
+        - **Real-Time Search**: Always searches for fresh data.
         
         **Vision Modes:**
-        - **claude_primary**: Best (€0.025/image)
-        - **qwen_only**: Free (GPU required)
-        - **None**: Text-only analysis
+        - **claude_only**: Best quality (Analyzing images with Claude)
+        - **None**: Text-only analysis (Faster/Cheaper)
         """)
     
     # ========================================================================
@@ -231,7 +219,7 @@ def main():
         if not query:
             st.error("Please enter a search query")
         else:
-            with st.spinner("🔄 Searching and analyzing properties... This may take 1-2 minutes"):
+            with st.spinner("🔄 Searching and analyzing properties..."):
                 # Progress indicators
                 progress_text = st.empty()
                 progress_bar = st.progress(0)
@@ -240,17 +228,17 @@ def main():
                 progress_bar.progress(0.2)
                 time.sleep(0.5)
                 
-                progress_text.text("🔍 Finding properties...")
+                progress_text.text("🔍 Scraping fresh properties...")
                 progress_bar.progress(0.4)
                 
                 # Call backend
                 result, error = search_properties(
                     query=query,
                     api_key=st.session_state.api_key,
-                    backend=backend,
+                    backend=backend, # Will always be "api"
                     vision_mode=vision_mode,
                     use_vision_agent=use_vision_agent,
-                    skip_scrape=skip_scrape,
+                    skip_scrape=False, # FORCED TO FALSE: Always scrape fresh
                     max_results=max_results
                 )
                 
