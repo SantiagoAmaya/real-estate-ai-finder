@@ -1,6 +1,6 @@
 # Streamlit Frontend Requirements
 
-streamlit==1.31.0
+streamlit==1.40.1
 requests==2.31.0
-pandas==2.2.0
-pillow==10.2.0
+pandas==2.2.3
+pillow==11.0.0
