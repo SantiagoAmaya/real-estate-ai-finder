@@ -150,7 +150,7 @@ def main():
             # REMOVED: skip_scrape checkbox
             # We will force skip_scrape=False in the call below
             
-            ax_results = st.slider(
+            max_results = st.slider(
                 "Max Results to Show",
                 min_value=3,   # Bajar mínimo
                 max_value=15,  # Bajar máximo
