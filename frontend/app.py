@@ -93,6 +93,111 @@ def format_cost(cost_eur):
     """Format cost in EUR"""
     return f"€{cost_eur:.3f}"
 
+def generate_html_report(results: dict, query: str) -> str:
+    """Generates a styled HTML report from search results"""
+    
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M")
+    
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Real Estate AI Report</title>
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 1000px; margin: 0 auto; padding: 20px; background: #f5f5f5; }}
+            .header {{ background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 20px; }}
+            .query-box {{ background: #e3f2fd; padding: 10px; border-left: 5px solid #2196f3; margin: 10px 0; }}
+            .property-card {{ background: white; margin-bottom: 30px; border-radius: 10px; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }}
+            .prop-header {{ background: #2c3e50; color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; }}
+            .score-badge {{ background: #27ae60; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 1.2em; }}
+            .prop-content {{ padding: 20px; }}
+            .specs {{ display: flex; gap: 20px; margin-bottom: 15px; color: #666; font-weight: bold; }}
+            .features-grid {{ display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }}
+            .feature-list {{ list-style: none; padding: 0; }}
+            .feature-item {{ margin: 5px 0; padding-left: 20px; position: relative; }}
+            .check::before {{ content: "✅"; position: absolute; left: 0; }}
+            .cross::before {{ content: "❌"; position: absolute; left: 0; }}
+            .gallery {{ display: flex; gap: 10px; overflow-x: auto; padding: 10px 0; }}
+            .gallery img {{ height: 200px; border-radius: 5px; object-fit: cover; cursor: pointer; transition: transform 0.2s; }}
+            .gallery img:hover {{ transform: scale(1.05); }}
+            .explanation {{ background: #fff3cd; padding: 15px; border-radius: 5px; margin-top: 15px; }}
+            .link-btn {{ display: inline-block; background: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-top: 10px; }}
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <h1>🏠 Real Estate AI Analysis Report</h1>
+            <div class="query-box">
+                <strong>Query:</strong> {query}<br>
+                <strong>Date:</strong> {timestamp} | <strong>Found:</strong> {len(results['properties'])} properties
+            </div>
+            <div style="display: flex; gap: 20px; font-size: 0.9em; color: #666;">
+                <span>⏱️ Time: {results.get('processing_time_seconds', 0):.1f}s</span>
+                <span>💰 Cost: €{results['cost_summary'].get('total_cost_eur', 0):.3f}</span>
+            </div>
+        </div>
+    """
+    
+    for i, prop in enumerate(results['properties'], 1):
+        # Format lists
+        matched = "".join([f'<li class="feature-item check">{f}</li>' for f in prop.get('matched_features', [])])
+        missing = "".join([f'<li class="feature-item cross">{f}</li>' for f in prop.get('missing_features', [])])
+        
+        # Images
+        images_html = ""
+        for img in prop.get('images', [])[:5]: # Top 5 images
+            images_html += f'<a href="{img}" target="_blank"><img src="{img}" loading="lazy"></a>'
+            
+        # Specs
+        specs = []
+        if prop.get('price'): specs.append(f"€{prop['price']:,}")
+        if prop.get('location'): specs.append(prop['location'])
+        if prop.get('size_m2'): specs.append(f"{prop['size_m2']} m²")
+        if prop.get('rooms'): specs.append(f"{prop['rooms']} hab")
+        
+        explanation = prop.get('match_explanation', 'AI Analysis completed successfully.')
+        
+        html += f"""
+        <div class="property-card">
+            <div class="prop-header">
+                <div style="font-size: 1.2em;">#{i} - {prop.get('title', 'Property')}</div>
+                <div class="score-badge">Match: {prop['score']:.1%}</div>
+            </div>
+            <div class="prop-content">
+                <div class="specs">
+                    <span>{' • '.join(specs)}</span>
+                </div>
+                
+                <div class="gallery">
+                    {images_html}
+                </div>
+                
+                <div class="explanation">
+                    <strong>🤖 AI Reasoning:</strong><br>
+                    {prop.get('description', '')[:300]}...
+                </div>
+                
+                <div class="features-grid">
+                    <div>
+                        <h3 style="color: #27ae60; margin-top: 0;">✅ Matched Requirements</h3>
+                        <ul class="feature-list">{matched}</ul>
+                    </div>
+                    <div>
+                        <h3 style="color: #c0392b; margin-top: 0;">❌ Missing / Unknown</h3>
+                        <ul class="feature-list">{missing}</ul>
+                    </div>
+                </div>
+                
+                <div style="text-align: right;">
+                    <a href="{prop.get('url', '#')}" target="_blank" class="link-btn">View on Fotocasa ↗</a>
+                </div>
+            </div>
+        </div>
+        """
+        
+    html += "</body></html>"
+    return html
+
 
 # ============================================================================
 # MAIN APP
@@ -273,44 +378,68 @@ def main():
     # RESULTS DISPLAY
     # ========================================================================
     
+    # Importar componentes para renderizar HTML
+    import streamlit.components.v1 as components
+
     if st.session_state.search_results:
         results = st.session_state.search_results
         
         st.markdown("---")
         
-        # Summary metrics
+        # 1. Summary Metrics (Definimos las columnas PRIMERO)
         col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            st.metric(
-                "Properties Found",
-                results['total_found']
-            )
+            st.metric("Properties Found", results['total_found'])
         
         with col2:
-            st.metric(
-                "Processing Time",
-                f"{results['processing_time_seconds']:.1f}s"
-            )
+            st.metric("Processing Time", f"{results['processing_time_seconds']:.1f}s")
         
         with col3:
             cost = results['cost_summary'].get('total_cost_eur', 0)
-            st.metric(
-                "Total Cost",
-                format_cost(cost)
-            )
+            st.metric("Total Cost", format_cost(cost))
         
         with col4:
             vision_analyzed = sum(1 for p in results['properties'] if p['had_vision_analysis'])
-            st.metric(
-                "Vision Analyzed",
-                f"{vision_analyzed}/{len(results['properties'])}"
-            )
+            st.metric("Vision Analyzed", f"{vision_analyzed}/{len(results['properties'])}")
+
+        st.markdown("---")
+
+        # 2. Report & Download Section
+        st.success("Analysis Complete!")
         
+        # Generar el HTML una sola vez
+        query_text = st.session_state.search_history[-1]['query'] if st.session_state.search_history else "Query"
+        html_report = generate_html_report(results, query_text)
+        
+        col_dl1, col_dl2 = st.columns([3, 1])
+        
+        with col_dl1:
+             st.markdown("### 📄 Full Analysis Report")
+             st.write("You can view the full report below or download it.")
+        
+        with col_dl2:
+            # Botón de descarga
+            st.download_button(
+                label="📥 Download HTML",
+                data=html_report,
+                file_name=f"real_estate_report_{datetime.now().strftime('%Y%m%d_%H%M')}.html",
+                mime="text/html",
+                type="primary",
+                use_container_width=True
+            )
+
+        # 3. VISUALIZACIÓN DEL REPORTE EN LA APP (Tu nueva petición)
+        # Usamos un expander para que esté limpio, pero el usuario puede abrirlo y verlo ahí mismo
+        with st.expander("👁️ View Report Preview (Interactive)", expanded=True):
+            # Renderizamos el HTML dentro de un iframe seguro
+            # height=1000 asegura que se vea bastante contenido, scrolling=True permite bajar
+            components.html(html_report, height=800, scrolling=True)
+
         st.markdown("---")
         
-        # Properties table
-        st.markdown("## 📊 Top Results")
+        # 4. Properties Table (Vista rápida nativa de Streamlit)
+        st.markdown("## 📊 Quick Results View")
         
         # Display each property
         for i, prop in enumerate(results['properties'], 1):
