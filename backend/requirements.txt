@@ -5,9 +5,10 @@ fastapi==0.109.0
 uvicorn[standard]==0.27.0
 python-multipart==0.0.6
 pydantic==2.12.0
+httpx==0.27.2
 
 # Your existing dependencies
-anthropic==0.18.1
+anthropic==0.39.0
 python-dotenv==1.0.0
 curl_cffi==0.6.2
 beautifulsoup4==4.12.2
@@ -21,4 +22,6 @@ loguru>=0.7.2
 PyYAML>=6.0
 great-expectations>=0.18.0
 qwen-vl-utils>=0.0.4
+
+
 
